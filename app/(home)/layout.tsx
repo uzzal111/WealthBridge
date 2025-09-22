@@ -15,7 +15,7 @@ const HomeLayout = ({
 				{children}
 			</div>
 			<footer className='bg-gray-800 text-white py-0 text-center'>
-				<HomeFotter></HomeFotter>
+				
 			</footer>
 		</div>
 	);

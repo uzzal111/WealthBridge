@@ -14,7 +14,7 @@ export default function Home() {
 	return (
 		<HomeLayout>
 			<CompanyOffersTicker></CompanyOffersTicker>
-			<BannerSlider></BannerSlider>
+			
 			<Crisp></Crisp>
 			
 		</HomeLayout>
