@@ -15,14 +15,6 @@ export default function Home() {
 		<HomeLayout>
 			<CompanyOffersTicker></CompanyOffersTicker>
 			<BannerSlider></BannerSlider>
-			<UserCountdown></UserCountdown>
-			<TaskRecordComponent></TaskRecordComponent>
-
-			<Benefits></Benefits>
-			<Conference></Conference>
-			<Testimonials></Testimonials>
-			<FAQ></FAQ>
-			<Partners></Partners>
 			<Crisp></Crisp>
 			
 		</HomeLayout>

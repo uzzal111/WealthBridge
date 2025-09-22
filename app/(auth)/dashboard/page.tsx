@@ -10,13 +10,9 @@ import DashboardModal from '@/components/ui/home/dashboardmodel';
 const DashboardPage = () => {
 	return (
 		<div>
-			<CompanyOffersTicker></CompanyOffersTicker>
+			
 			<BannerSlider></BannerSlider>
-			<Navigation></Navigation>
-			<TaskRecordComponent></TaskRecordComponent>
-			<Partners></Partners>
-			<HomeFooter></HomeFooter>
-			<DashboardModal></DashboardModal>
+			
 			</div>
 		
 	);

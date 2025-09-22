@@ -1,262 +1,186 @@
-// app/signup/page.tsx
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { FiUser, FiMail, FiPhone, FiLock, FiEye, FiEyeOff, FiRefreshCw, FiGift } from 'react-icons/fi';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { Toaster, toast } from 'react-hot-toast';
-import PhoneInput from 'react-phone-input-2';
-import 'react-phone-input-2/lib/style.css';
-import Link from 'next/link';
+import { FiMail, FiKey, FiSend, FiPhone, FiCheck } from 'react-icons/fi';
 
-interface FormData {
-  fullName: string;
-  email: string;
-  phone: string;
-  password: string;
-  confirmPassword: string;
-  referralCode: string;
-  captcha: string;
-}
-
-export default function SignupPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<FormData>({
-    fullName: '',
+  const [formData, setFormData] = useState({
     email: '',
-    phone: '',
+    verificationCode: '',
     password: '',
     confirmPassword: '',
-    referralCode: '',
-    captcha: ''
+    phone: '+1',
+    terms: false
   });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [captchaText, setCaptchaText] = useState('');
-
-  useEffect(() => {
-    generateCaptcha();
-  }, []);
-
-  const generateCaptcha = () => {
-    const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let captcha = '';
-    for (let i = 0; i < 6; i++) {
-      captcha += chars[Math.floor(Math.random() * chars.length)];
-    }
-    setCaptchaText(captcha);
-    setFormData(prev => ({ ...prev, captcha: '' }));
-  };
+  const [codeSent, setCodeSent] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
-  const validateForm = () => {
-    let valid = true;
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Full name is required';
-      valid = false;
-    }
-
-    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Valid email is required';
-      valid = false;
-    }
-
-    if (!formData.phone || formData.phone.length < 6) {
-      newErrors.phone = 'Valid phone number is required';
-      valid = false;
-    }
-
-    if (!formData.password || formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-      valid = false;
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-      valid = false;
-    }
-
-    if (formData.captcha !== captchaText) {
-      newErrors.captcha = 'Incorrect CAPTCHA';
-      valid = false;
-      generateCaptcha();
-    }
-
-    setErrors(newErrors);
-    return valid;
+  const sendVerificationCode = () => {
+    // Implement your code sending logic here
+    setCodeSent(true);
+    alert('Verification code sent to your email');
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm()) {
-      toast.error('Please fix the errors!');
+    // Add form validation here
+    if (formData.password !== formData.confirmPassword) {
+      alert("Passwords don't match!");
       return;
     }
-    setIsLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success('Account Created Successfully!');
-      router.push('/login?signup=success');
-    } catch (error) {
-      toast.error('Signup failed!');
-      generateCaptcha();
-    } finally {
-      setIsLoading(false);
+    if (!formData.terms) {
+      alert("Please accept the terms and conditions");
+      return;
     }
+    router.push('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-100 via-sky-200 to-indigo-100 flex items-center justify-center p-4">
-      <Toaster position="top-center" reverseOrder={false} />
-      <motion.div 
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.7 }}
-        className="w-full max-w-md bg-white/40 backdrop-blur-2xl rounded-3xl shadow-xl p-10 border border-white/30"
-      >
-        <div className="text-center mb-10">
-          <h1 className="text-4xl font-extrabold text-indigo-700 drop-shadow-md">h5Fivex</h1>
-          <h2 className="text-2xl font-extrabold text-indigo-700 drop-shadow-md">Create Account</h2>
-          <p className="text-gray-700 mt-2 text-base">Join & Grow With Us 🌍</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Full Name */}
-          <div className="relative">
-            <FiUser className="absolute top-4 left-4 text-gray-400" />
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className={`w-full pl-12 pr-4 py-3 rounded-2xl bg-white/80 border ${errors.fullName ? 'border-red-400' : 'border-gray-300'} focus:ring-2 focus:ring-blue-300 focus:border-blue-300`}
-            />
-            {errors.fullName && <p className="text-xs text-red-500 pt-1">{errors.fullName}</p>}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-800">Create Account</h1>
+            <p className="text-gray-600 mt-2">Join us today!</p>
           </div>
 
-          {/* Email */}
-          <div className="relative">
-            <FiMail className="absolute top-4 left-4 text-gray-400" />
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email Address"
-              className={`w-full pl-12 pr-4 py-3 rounded-2xl bg-white/80 border ${errors.email ? 'border-red-400' : 'border-gray-300'} focus:ring-2 focus:ring-blue-300 focus:border-blue-300`}
-            />
-            {errors.email && <p className="text-xs text-red-500 pt-1">{errors.email}</p>}
-          </div>
-
-          {/* Phone */}
-          <div>
-            <PhoneInput
-              country={'gb'}  // UK as the default
-              value={formData.phone}
-              onChange={phone => setFormData(prev => ({ ...prev, phone }))}
-              inputClass="!w-full !pl-12 !pr-4 !py-3 !rounded-2xl !bg-white/80 !border-gray-300 focus:!ring-blue-300 focus:!border-blue-300"
-              containerClass="relative"
-              buttonClass="!bg-white/80"
-              dropdownClass="!bg-white"
-            />
-            {errors.phone && <p className="text-xs text-red-500 pt-1">{errors.phone}</p>}
-          </div>
-
-          {/* Password */}
-          <div className="relative">
-            <FiLock className="absolute top-4 left-4 text-gray-400" />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Password"
-              className={`w-full pl-12 pr-12 py-3 rounded-2xl bg-white/80 border ${errors.password ? 'border-red-400' : 'border-gray-300'} focus:ring-2 focus:ring-blue-300 focus:border-blue-300`}
-            />
-            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute top-4 right-4 text-gray-500">
-              {showPassword ? <FiEyeOff /> : <FiEye />}
-            </button>
-            {errors.password && <p className="text-xs text-red-500 pt-1">{errors.password}</p>}
-          </div>
-
-          {/* Confirm Password */}
-          <div className="relative">
-            <FiLock className="absolute top-4 left-4 text-gray-400" />
-            <input
-              type={showConfirmPassword ? 'text' : 'password'}
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              placeholder="Confirm Password"
-              className={`w-full pl-12 pr-12 py-3 rounded-2xl bg-white/80 border ${errors.confirmPassword ? 'border-red-400' : 'border-gray-300'} focus:ring-2 focus:ring-blue-300 focus:border-blue-300`}
-            />
-            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute top-4 right-4 text-gray-500">
-              {showConfirmPassword ? <FiEyeOff /> : <FiEye />}
-            </button>
-            {errors.confirmPassword && <p className="text-xs text-red-500 pt-1">{errors.confirmPassword}</p>}
-          </div>
-
-          {/* Referral Code */}
-          <div className="relative">
-            <FiGift className="absolute top-4 left-4 text-gray-400" />
-            <input
-              type="text"
-              name="referralCode"
-              value={formData.referralCode}
-              onChange={handleChange}
-              placeholder="Referral code(Optional)"
-              className="w-full pl-12 pr-4 py-3 rounded-2xl bg-white/80 border border-gray-300 focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
-            />
-          </div>
-
-          {/* CAPTCHA */}
-          <div className="text-center">
-            <div className="flex justify-center items-center gap-2 mb-3">
-              <div className="font-mono text-lg tracking-widest bg-gray-100 py-2 px-6 rounded-lg">{captchaText}</div>
-              <button type="button" onClick={generateCaptcha} className="p-2 rounded-full bg-gray-200 hover:bg-gray-300">
-                <FiRefreshCw className="text-gray-600" />
-              </button>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Email Field */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <FiMail className="mr-2 text-gray-500" />
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="Enter your email"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
             </div>
-            <input
-              type="text"
-              name="captcha"
-              value={formData.captcha}
-              onChange={handleChange}
-              placeholder="Enter CAPTCHA"
-              className={`w-full px-4 py-3 rounded-2xl bg-white/80 border ${errors.captcha ? 'border-red-400' : 'border-gray-300'} focus:ring-2 focus:ring-blue-300 focus:border-blue-300`}
-            />
-            {errors.captcha && <p className="text-xs text-red-500 pt-1">{errors.captcha}</p>}
-          </div>
 
-          {/* Submit Button */}
-          <div className="pt-4">
+            {/* Verification Code */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="flex items-center text-sm font-medium text-gray-700">
+                  <FiSend className="mr-2 text-gray-500" />
+                  Verification Code
+                </label>
+                <button
+                  type="button"
+                  onClick={sendVerificationCode}
+                  disabled={!formData.email || codeSent}
+                  className={`text-sm ${codeSent ? 'text-green-600' : 'text-blue-600 hover:text-blue-800'}`}
+                >
+                  {codeSent ? 'Code Sent' : 'Send Code'}
+                </button>
+              </div>
+              <input
+                type="text"
+                name="verificationCode"
+                value={formData.verificationCode}
+                onChange={handleChange}
+                placeholder="Enter verification code"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+              <p className="text-xs text-gray-500">
+                Check your email, including spam folder, for the code
+              </p>
+            </div>
+
+            {/* Password */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <FiKey className="mr-2 text-gray-500" />
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                placeholder="Create password (min 8 characters)"
+                minLength={8}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+              <div className="text-xs text-gray-500 flex items-center">
+                <FiCheck className="mr-1" /> At least one uppercase letter
+              </div>
+            </div>
+
+            {/* Confirm Password */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <FiKey className="mr-2 text-gray-500" />
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm your password"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-700">
+                <FiPhone className="mr-2 text-gray-500" />
+                Phone Number (US)
+              </label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                required
+              />
+            </div>
+
+            {/* Terms and Conditions */}
+            <div className="flex items-start mt-4">
+              <input
+                type="checkbox"
+                id="terms"
+                name="terms"
+                checked={formData.terms}
+                onChange={handleChange}
+                className="mt-1 mr-3 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                required
+              />
+              <label htmlFor="terms" className="block text-sm text-gray-700">
+                I agree to the <a href="#" className="text-blue-600 hover:underline">Terms of Service</a> and <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a>
+              </label>
+            </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
-              className="w-full bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-500 hover:from-indigo-600 hover:via-blue-600 hover:to-purple-600 py-3 rounded-2xl text-white font-bold shadow-md transition-transform transform hover:scale-105"
+              className="w-full mt-6 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
-              {isLoading ? 'Creating...' : 'Create Account'}
+              CREATE ACCOUNT
             </button>
-          </div>
-
-          <div className="text-center text-sm text-gray-600 mt-6">
-            Already have an account?{' '}
-            <Link href="/login" className="font-bold text-indigo-600 hover:underline">
-              Login
-            </Link>
-          </div>
-        </form>
-      </motion.div>
+          </form>
+        </div>
+      </div>
     </div>
   );
 }

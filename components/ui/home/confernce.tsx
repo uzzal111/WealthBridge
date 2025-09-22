@@ -12,7 +12,7 @@ export default function Conference() {
         </video>
       </div>
       <p className="text-center text-sm text-gray-600 dark:text-gray-300 mt-3 leading-relaxed px-2">
-        Experience our international business conference—see how Bitnex is driving global innovation and success in the eCommerce space.
+        Experience our international business conference—see how h5Fivex is driving global innovation and success in the eCommerce space.
       </p>
     </section>
   );

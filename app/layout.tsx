@@ -16,8 +16,8 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-	title: 'h5Fivex',
-	description: 'H5FivexEcommerce',
+	title: 'WealthBridge',
+	description: 'WealthBridge Ecommerce',
 };
 
 export default function RootLayout({

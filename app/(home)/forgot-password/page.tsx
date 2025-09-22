@@ -3,224 +3,232 @@ import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { fetchBaseQueryError } from '@/redux/services/helpers';
 import PulseLoader from 'react-spinners/PulseLoader';
-
 import { useRouter } from 'next/navigation';
 import {
-	useResendVerificationEmailMutation,
-	useSecurityVerifyMutation,
+  useResendVerificationEmailMutation,
+  useSecurityVerifyMutation,
 } from '@/redux/features/auth/authApi';
 import { addEmail } from '@/redux/resetPassSlice';
 import { useDispatch } from 'react-redux';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { FiMail, FiKey, FiArrowRight, FiClock } from 'react-icons/fi';
+
 const ForgotPassword = () => {
-	const router = useRouter();
-	const dispatch = useDispatch();
-	// call resend email verification api
-	const [
-		resendVerificationEmail,
-		{
-			isLoading: isResendLoading,
-			isSuccess: isResendSuccess,
-			isError: isResendError,
-			error: resendError,
-		},
-	] = useResendVerificationEmailMutation();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  
+  // API mutations
+  const [
+    resendVerificationEmail,
+    {
+      isLoading: isResendLoading,
+      isSuccess: isResendSuccess,
+      isError: isResendError,
+      error: resendError,
+    },
+  ] = useResendVerificationEmailMutation();
 
-	// call verify security code api
-	const [
-		verifySecurityCode,
-		{
-			isLoading: isVerifyLoading,
-			isSuccess: isVerifySuccess,
-			isError: isVerifyError,
-			error: verifyError,
-		},
-	] = useSecurityVerifyMutation();
-	// State variables for verification code and timer
-	const [email, setEmail] = useState('');
-	const [verificationCode, setVerificationCode] = useState('');
-	const [codeError, setCodeError] = useState(false);
-	const [resendDisabled, setResendDisabled] = useState(false);
-	const [timer, setTimer] = useState(30);
-	const [send, setSend] = useState(false);
-	const [sendError, setSendError] = useState(false);
+  const [
+    verifySecurityCode,
+    {
+      isLoading: isVerifyLoading,
+      isSuccess: isVerifySuccess,
+      isError: isVerifyError,
+      error: verifyError,
+    },
+  ] = useSecurityVerifyMutation();
 
-	//handle change email
-	const handleChangeEmail = (e: any) => {
-		setEmail(e.target.value);
-		setSendError(false);
-	};
+  // State variables
+  const [email, setEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [codeError, setCodeError] = useState(false);
+  const [resendDisabled, setResendDisabled] = useState(false);
+  const [timer, setTimer] = useState(30);
+  const [send, setSend] = useState(false);
+  const [sendError, setSendError] = useState(false);
 
-	// Handle resend click
-	const handleResend = (e: any) => {
-		e.preventDefault();
-		resendVerificationEmail({ email });
-		setResendDisabled(true); // Disable resend button
-		setTimer(60); // Reset timer
-	};
+  // Handlers
+  const handleChangeEmail = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    setSendError(false);
+  };
 
-	// handle verification
-	const handleVerify = (e: any) => {
-		e.preventDefault();
-		const data = {
-			email,
-			code: verificationCode,
-			url: '/',
-		};
-		verifySecurityCode(data);
-	};
+  const handleResend = (e: React.FormEvent) => {
+    e.preventDefault();
+    resendVerificationEmail({ email });
+    setResendDisabled(true);
+    setTimer(60);
+  };
 
-	// useEffect to handle timer countdown
-	useEffect(() => {
-		let intervalId: NodeJS.Timeout;
-		if (timer > 0 && resendDisabled) {
-			intervalId = setInterval(() => {
-				setTimer((prevTimer) => prevTimer - 1);
-			}, 1000);
-		} else {
-			setResendDisabled(false); // Enable resend button when timer finishes
-		}
+  const handleVerify = (e: React.FormEvent) => {
+    e.preventDefault();
+    const data = {
+      email,
+      code: verificationCode,
+      url: '/',
+    };
+    verifySecurityCode(data);
+  };
 
-		return () => clearInterval(intervalId); // Cleanup interval
-	}, [timer, resendDisabled]);
+  // Effects
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    if (timer > 0 && resendDisabled) {
+      intervalId = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    } else {
+      setResendDisabled(false);
+    }
+    return () => clearInterval(intervalId);
+  }, [timer, resendDisabled]);
 
-	// use effect to handle resend success
-	useEffect(() => {
-		if (isResendSuccess) {
-			toast.success('Email sent successfully');
-			setSend(true);
-		}
+  useEffect(() => {
+    if (isResendSuccess) {
+      toast.success('Email sent successfully');
+      setSend(true);
+    }
+    if (resendError) {
+      if (isResendError) {
+        toast.error((resendError as fetchBaseQueryError).data?.message);
+        setSendError(true);
+      }
+    }
+  }, [isResendSuccess, resendError, isResendError]);
 
-		if (resendError) {
-			if (isResendError) {
-				toast.error((resendError as fetchBaseQueryError).data?.message);
-				setSendError(true);
-			}
-		}
-	}, [isResendSuccess, resendError, isResendError]);
+  useEffect(() => {
+    if (isVerifySuccess) {
+      toast.success('Verification successful');
+      dispatch(addEmail(email));
+      router.push('/reset-password');
+    }
+    if (verifyError) {
+      if (isVerifyError) {
+        toast.error((verifyError as fetchBaseQueryError).data?.message);
+        setCodeError(true);
+      }
+    }
+  }, [isVerifySuccess, verifyError, isVerifyError, dispatch, email, router]);
 
-	// use effect to handle verification success
-	useEffect(() => {
-		if (isVerifySuccess) {
-			toast.success('Verification successful');
-			dispatch(addEmail(email));
-			router.push('/reset-password');
-		}
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-lg shadow-md p-6">
+        {send ? (
+          <>
+            <div className="text-center mb-6">
+              <h1 className="text-2xl font-bold text-gray-800">Check Your Email</h1>
+              <p className="text-sm text-gray-600 mt-2">
+                We've sent a verification code to{' '}
+                <span className="font-semibold text-blue-600">{email}</span>
+              </p>
+            </div>
 
-		if (verifyError) {
-			if (isVerifyError) {
-				toast.error((verifyError as fetchBaseQueryError).data?.message);
-				setCodeError(true);
-			}
-		}
-	}, [isVerifySuccess, verifyError, isVerifyError]);
-	return (
-		<div className=' bg-white p-4 mt-20'>
-			{send ? (
-				<Card className='max-w-sm mx-auto p-4'>
-					<div className=' space-y-1'>
-						<h2 className=' text-gray-800 font-bold text-center'>
-							Sent a verification code to{' '}
-						</h2>
-						<p className='font-semibold text-htx-blue text-xs text-center'>
-							{email}
-						</p>
-					</div>
-					<form className='flex flex-col gap-4' onSubmit={handleVerify}>
-						<div>
-							<div className='mb-2 block'>
-								<Label
-									htmlFor='email1'
-									className='text-gray-800 text-sm font-semibold ml-1'
-								>
-									Your Code
-								</Label>
-							</div>
-							<div>
-								<Input
-									id='text1'
-									type='text'
-									required
-									placeholder=' e.g. 123456'
-									value={verificationCode}
-									onChange={(e) => setVerificationCode(e.target.value)}
-								/>
-								{codeError && (
-									<span className='text-xs text-red-500 ml-1'>
-										Please enter the correct code
-									</span>
-								)}
-							</div>
-							<span className='mt-1 flex justify-end pr-2 text-xs'>
-								Didn’t get the code?{' '}
-								<span
-									className={`font-bold cursor-pointer hover:text-icm-green ml-1 ${
-										resendDisabled ? 'text-icm-green' : ''
-									}`}
-									onClick={handleResend}
-								>
-									{resendDisabled ? `Resend in ${timer} seconds` : 'Resend'}
-								</span>
-							</span>
-						</div>
+            <form onSubmit={handleVerify} className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <FiKey className="text-gray-500 mr-2" />
+                  <label className="block font-medium text-gray-700">Verification Code</label>
+                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter your 6-digit code"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                {codeError && (
+                  <p className="text-xs text-red-500 mt-1">Please enter the correct code</p>
+                )}
+              </div>
 
-						<Button type='submit' className=' bg-htx-blue hover:bg-blue-700'>
-							{isResendLoading || isVerifyLoading ? (
-								<PulseLoader color='#fff' size={8} margin={2} />
-							) : (
-								'Submit'
-							)}
-						</Button>
-					</form>
-				</Card>
-			) : (
-				<Card className='max-w-sm mx-auto  p-4'>
-					<div>
-						<h2 className=' text-htx-blue font-bold text-center'>
-							Forgot your password?
-						</h2>
-					</div>
-					<form className='flex flex-col gap-4' onSubmit={handleResend}>
-						<div>
-							<Label
-								htmlFor='email1'
-								className='text-gray-800 text-sm font-semibold ml-1'
-							>
-								Enter Your email
-							</Label>
+              <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center text-gray-500">
+                  <FiClock className="mr-1" />
+                  <span>Code expires in {timer} seconds</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendDisabled}
+                  className={`text-blue-600 hover:text-blue-800 font-medium ${
+                    resendDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
+                >
+                  Resend Code
+                </button>
+              </div>
 
-							<Input
-								id='email1'
-								type='email'
-								placeholder='e.g. example@gmail.com'
-								required
-								value={email}
-								autoComplete='off'
-								onChange={handleChangeEmail}
-								className='w-full px-3 py-2 border rounded-md text-xs mt-1 placeholder:text-xs'
-							/>
-							{sendError && (
-								<span className='text-xs text-red-500'>
-									It seem we are having trouble sending the email.
-								</span>
-							)}
-						</div>
+              <button
+                type="submit"
+                className="w-full mt-4 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out flex items-center justify-center"
+                disabled={isVerifyLoading}
+              >
+                {isVerifyLoading ? (
+                  <PulseLoader color="#fff" size={8} margin={2} />
+                ) : (
+                  <>
+                    Verify Code <FiArrowRight className="ml-2" />
+                  </>
+                )}
+              </button>
+            </form>
+          </>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold text-gray-800 mb-2 text-center">Forgot Password?</h1>
+            <p className="text-sm text-gray-600 mb-6 text-center">
+              Enter your email to receive a password reset link
+            </p>
 
-						<Button type='submit' className=' bg-htx-blue hover:bg-blue-700'>
-							{isResendLoading || isVerifyLoading ? (
-								<PulseLoader color='#fff' size={8} margin={2} />
-							) : (
-								'Continue'
-							)}
-						</Button>
-					</form>
-				</Card>
-			)}
-		</div>
-	);
+            <form onSubmit={handleResend} className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <FiMail className="text-gray-500 mr-2" />
+                  <label className="block font-medium text-gray-700">Email Address</label>
+                </div>
+                <input
+                  type="email"
+                  placeholder="example@email.com"
+                  required
+                  value={email}
+                  onChange={handleChangeEmail}
+                  className="block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                {sendError && (
+                  <p className="text-xs text-red-500 mt-1">
+                    We're having trouble sending the email. Please try again.
+                  </p>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="w-full mt-4 py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out flex items-center justify-center"
+                disabled={isResendLoading}
+              >
+                {isResendLoading ? (
+                  <PulseLoader color="#fff" size={8} margin={2} />
+                ) : (
+                  <>
+                    Continue <FiArrowRight className="ml-2" />
+                  </>
+                )}
+              </button>
+            </form>
+
+            <div className="mt-4 text-center">
+              <button
+                onClick={() => router.back()}
+                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              >
+                Back to Login
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ForgotPassword;
