@@ -26,7 +26,7 @@ export default function MobileFooterNav() {
     { 
       icon: <FaShoppingBag size={18} />, 
       label: "Orders", 
-      path: "/rders",
+      path: "/order",
       activeColor: "text-indigo-600",
       inactiveColor: "text-gray-500"
     },
