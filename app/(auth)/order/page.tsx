@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 interface Review {
   id: string;
   productName: string;
+  productImage: string;
   rating: number;
   comment: string;
   createdAt: Date;
@@ -32,6 +33,18 @@ interface User {
   isActive: boolean;
 }
 
+// Predefined product options with images
+const PRODUCTS = [
+  { id: 1, name: 'iPhone 15 Pro', image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=center' },
+  { id: 2, name: 'Samsung Galaxy S23', image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=400&fit=crop&crop=center' },
+  { id: 3, name: 'MacBook Pro M3', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w-400&h=400&fit=crop&crop=center' },
+  { id: 4, name: 'Nike Air Max', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&crop=center' },
+  { id: 7, name: 'Dyson Vacuum', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&crop=center' },
+  { id: 8, name: 'LG OLED TV', image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=400&fit=crop&crop=center' },
+  { id: 9, name: 'Amazon Echo', image: 'https://images.unsplash.com/photo-1589003077984-894e133dabab?w=400&h=400&fit=crop&crop=center' },
+  { id: 10, name: 'Tesla Model 3', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=400&fit=crop&crop=center' },
+];
+
 export default function WealthBridgePremiumReviewSystem() {
   // Mock user data
   const [currentUser] = useState<User>({
@@ -56,13 +69,44 @@ export default function WealthBridgePremiumReviewSystem() {
   ]);
 
   // Reviews state
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([
+    {
+      id: '1',
+      productName: 'iPhone 15 Pro',
+      productImage: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=center',
+      rating: 5,
+      comment: 'Amazing phone with excellent camera quality!',
+      createdAt: new Date('2024-01-15'),
+      packageName: 'Starter'
+    },
+    {
+      id: '2',
+      productName: 'Samsung Galaxy S23',
+      productImage: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=400&fit=crop&crop=center',
+      rating: 4,
+      comment: 'Great performance but battery could be better',
+      createdAt: new Date('2024-01-14'),
+      packageName: 'Starter'
+    }
+  ]);
+  
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+  const [showProductSelection, setShowProductSelection] = useState<boolean>(false);
   const [currentPackage, setCurrentPackage] = useState<Package | null>(null);
-  const [newReview, setNewReview] = useState<{ productName: string; rating: number; comment: string }>({
+  const [newReview, setNewReview] = useState<{ 
+    productId: number | null;
+    productName: string; 
+    productImage: string;
+    rating: number; 
+    comment: string; 
+    customProductName: string;
+  }>({
+    productId: null,
     productName: '',
+    productImage: '',
     rating: 5,
-    comment: ''
+    comment: '',
+    customProductName: ''
   });
 
   // Active users count
@@ -101,11 +145,44 @@ export default function WealthBridgePremiumReviewSystem() {
     
     setCurrentPackage(pkg);
     setShowReviewModal(true);
+    setShowProductSelection(true); // Start with product selection
+    setNewReview({
+      productId: null,
+      productName: '',
+      productImage: '',
+      rating: 5,
+      comment: '',
+      customProductName: ''
+    });
+  };
+
+  // Handle selecting a product
+  const handleSelectProduct = (product: typeof PRODUCTS[0]) => {
+    setNewReview({
+      ...newReview,
+      productId: product.id,
+      productName: product.name,
+      productImage: product.image
+    });
+    setShowProductSelection(false);
+  };
+
+  // Handle using custom product
+  const handleCustomProduct = () => {
+    setNewReview({
+      ...newReview,
+      productId: null,
+      productName: '',
+      productImage: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center' // Default product image
+    });
+    setShowProductSelection(false);
   };
 
   // Handle submitting a review
   const handleSubmitReview = () => {
-    if (!newReview.productName.trim() || !newReview.comment.trim()) {
+    const finalProductName = newReview.productId ? newReview.productName : newReview.customProductName;
+    
+    if (!finalProductName.trim() || !newReview.comment.trim()) {
       alert('Please fill in all fields');
       return;
     }
@@ -114,7 +191,8 @@ export default function WealthBridgePremiumReviewSystem() {
 
     const review: Review = {
       id: Math.random().toString(36).substring(7),
-      productName: newReview.productName,
+      productName: finalProductName,
+      productImage: newReview.productImage,
       rating: newReview.rating,
       comment: newReview.comment,
       createdAt: new Date(),
@@ -133,14 +211,22 @@ export default function WealthBridgePremiumReviewSystem() {
     );
     
     setPackages(updatedPackages);
-    setNewReview({ productName: '', rating: 5, comment: '' });
+    setNewReview({ 
+      productId: null,
+      productName: '', 
+      productImage: '', 
+      rating: 5, 
+      comment: '',
+      customProductName: ''
+    });
     setShowReviewModal(false);
+    setShowProductSelection(false);
     
     // Check if this was the final review
     if (currentPackage.reviewsSubmitted + 1 >= currentPackage.reviewsRequired) {
-      alert(`Congratulations! You've completed today's ${currentPackage.reviewsRequired} reviews for the ${currentPackage.name} package. Come back tomorrow for more opportunities!`);
+      alert(`🎉 Congratulations! You've completed today's ${currentPackage.reviewsRequired} reviews for the ${currentPackage.name} package.`);
     } else {
-      alert('Review submitted successfully!');
+      alert('✅ Review submitted successfully!');
     }
   };
 
@@ -340,105 +426,258 @@ export default function WealthBridgePremiumReviewSystem() {
             <PackageCard key={pkg.id} pkg={pkg} />
           ))}
         </div>
-      </div>
- {/* Premium Review Modal */}
-{showReviewModal && currentPackage && (
-  <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl max-w-md w-full border border-slate-600 animate-modal-in">
-      <div className="p-6">
-        {/* Compact Header */}
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-white">Share Experience ✨</h3>
-          <button 
-            onClick={() => setShowReviewModal(false)}
-            className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded-full"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+
+        {/* Recent Reviews Section */}
+        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl shadow-2xl p-8 mb-8 border border-slate-600">
+          <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
+            <svg className="w-6 h-6 mr-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
             </svg>
-          </button>
-        </div>
-        
-        {/* Compact Package Info */}
-        <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-3 rounded-lg mb-4 border border-blue-700">
-          <p className="text-blue-200 text-xs text-center">
-            <span className="font-semibold text-white">{currentPackage.name}</span> • 
-            Progress: <span className="font-semibold text-white">{currentPackage.reviewsSubmitted + 1}/{currentPackage.reviewsRequired}</span>
-          </p>
-        </div>
-        
-        {/* Compact Review Form */}
-        <div className="space-y-4">
-          {/* Product Name Input */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-300 mb-1">Product Name *</label>
-            <input 
-              type="text" 
-              value={newReview.productName}
-              onChange={(e) => setNewReview({...newReview, productName: e.target.value})}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-              placeholder="Enter product name..."
-            />
-          </div>
+            Your Recent Reviews
+          </h3>
           
-          {/* Rating Stars */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-300 mb-1">Your Rating *</label>
-            <div className="flex justify-center space-x-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button 
-                  key={star}
-                  type="button"
-                  onClick={() => setNewReview({...newReview, rating: star})}
-                  className="focus:outline-none transform hover:scale-110 transition-transform duration-200"
-                >
-                  <svg 
-                    className={`w-8 h-8 ${star <= newReview.rating ? 'text-yellow-400 drop-shadow-lg' : 'text-slate-600'}`} 
-                    fill="currentColor" 
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                  </svg>
-                </button>
+          {reviews.length === 0 ? (
+            <div className="text-center py-12 text-slate-400">
+              <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+              <p className="text-lg">No reviews yet. Start reviewing to earn rewards!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reviews.slice(0, 6).map((review) => (
+                <div key={review.id} className="bg-slate-900 rounded-xl p-5 border border-slate-700 hover:border-blue-500 transition-all duration-300">
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <div className="relative">
+                        <img 
+                          src={review.productImage} 
+                          alt={review.productName}
+                          className="w-16 h-16 rounded-lg object-cover border-2 border-slate-600"
+                        />
+                        <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {review.packageName}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-white mb-1">{review.productName}</h4>
+                      <div className="flex items-center mb-2">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <svg
+                            key={star}
+                            className={`w-4 h-4 ${star <= review.rating ? 'text-yellow-400' : 'text-slate-600'}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                        <span className="ml-2 text-slate-400 text-sm">{review.rating}/5</span>
+                      </div>
+                      <p className="text-slate-300 text-sm line-clamp-2">{review.comment}</p>
+                      <div className="text-slate-500 text-xs mt-3">
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-          </div>
-          
-          {/* Comment Textarea */}
-          <div>
-            <label className="block text-xs font-semibold text-blue-300 mb-1">Review Comment *</label>
-            <textarea 
-              value={newReview.comment}
-              onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
-              rows={3}
-              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-              placeholder="Share your experience..."
-            />
-          </div>
-          
-          {/* ✅ COMPACT SUBMIT BUTTON */}
-          <div className="flex justify-end space-x-2 pt-2">
-            <button 
-              onClick={() => setShowReviewModal(false)}
-              className="px-4 py-2 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors font-semibold text-sm"
-            >
-              Cancel
-            </button>
-            <button 
-              onClick={handleSubmitReview}
-              className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold text-sm flex items-center"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              Submit
-            </button>
-          </div>
+          )}
         </div>
       </div>
-    </div>
-  </div>
-)}
+
+      {/* Product Selection Modal */}
+      {showReviewModal && showProductSelection && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-600 animate-modal-in">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Select Product 📱</h3>
+                  <p className="text-blue-300 text-sm mt-1">
+                    Choose a product to review for {currentPackage?.name} package
+                  </p>
+                </div>
+                <button 
+                  onClick={() => setShowReviewModal(false)}
+                  className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-slate-700 rounded-full"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold text-white mb-4">Popular Products</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+                  {PRODUCTS.map((product) => (
+                    <button
+                      key={product.id}
+                      onClick={() => handleSelectProduct(product)}
+                      className="group relative bg-slate-700 rounded-xl p-4 border border-slate-600 hover:border-blue-500 hover:bg-slate-800 transition-all duration-300 transform hover:-translate-y-1"
+                    >
+                      <div className="aspect-square overflow-hidden rounded-lg mb-3">
+                        <img 
+                          src={product.image} 
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                      <p className="text-white text-sm font-medium truncate">{product.name}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t border-slate-700 pt-6">
+                <h4 className="text-lg font-semibold text-white mb-4">Or Review Your Own Product</h4>
+                <button
+                  onClick={handleCustomProduct}
+                  className="w-full p-4 bg-gradient-to-r from-purple-900 to-blue-900 rounded-xl border border-slate-600 hover:border-blue-500 hover:from-purple-800 hover:to-blue-800 transition-all duration-300 flex items-center justify-center group"
+                >
+                  <svg className="w-6 h-6 mr-3 text-blue-400 group-hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-white font-semibold">Add Custom Product</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Modal with Product Image */}
+      {showReviewModal && !showProductSelection && currentPackage && (
+        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl max-w-md w-full border border-slate-600 animate-modal-in">
+            <div className="p-6">
+              {/* Header */}
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-white">Write Review ✍️</h3>
+                <button 
+                  onClick={() => setShowReviewModal(false)}
+                  className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded-full"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Package Info */}
+              <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-3 rounded-lg mb-4 border border-blue-700">
+                <p className="text-blue-200 text-xs text-center">
+                  <span className="font-semibold text-white">{currentPackage.name}</span> • 
+                  Progress: <span className="font-semibold text-white">{currentPackage.reviewsSubmitted + 1}/{currentPackage.reviewsRequired}</span>
+                </p>
+              </div>
+              
+              {/* Product Preview with Image */}
+              <div className="mb-6 bg-slate-700 rounded-xl p-4 border border-slate-600">
+                <div className="flex items-center space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="relative">
+                      <img 
+                        src={newReview.productImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center'} 
+                        alt="Product"
+                        className="w-16 h-16 rounded-lg object-cover border-2 border-slate-500"
+                      />
+                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                        Product
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    {newReview.productId ? (
+                      <h4 className="text-white font-semibold">{newReview.productName}</h4>
+                    ) : (
+                      <div>
+                        <label className="block text-xs font-semibold text-blue-300 mb-1">Product Name *</label>
+                        <input 
+                          type="text" 
+                          value={newReview.customProductName}
+                          onChange={(e) => setNewReview({...newReview, customProductName: e.target.value})}
+                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                          placeholder="Enter product name..."
+                        />
+                      </div>
+                    )}
+                    <button 
+                      onClick={() => setShowProductSelection(true)}
+                      className="text-xs text-blue-400 hover:text-blue-300 mt-2 flex items-center"
+                    >
+                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                      </svg>
+                      Change Product
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Review Form */}
+              <div className="space-y-4">
+                {/* Rating Stars */}
+                <div>
+                  <label className="block text-xs font-semibold text-blue-300 mb-1">Your Rating *</label>
+                  <div className="flex justify-center space-x-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button 
+                        key={star}
+                        type="button"
+                        onClick={() => setNewReview({...newReview, rating: star})}
+                        className="focus:outline-none transform hover:scale-110 transition-transform duration-200"
+                      >
+                        <svg 
+                          className={`w-8 h-8 ${star <= newReview.rating ? 'text-yellow-400 drop-shadow-lg' : 'text-slate-600'}`} 
+                          fill="currentColor" 
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Comment Textarea */}
+                <div>
+                  <label className="block text-xs font-semibold text-blue-300 mb-1">Review Comment *</label>
+                  <textarea 
+                    value={newReview.comment}
+                    onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                    rows={3}
+                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                    placeholder="Share your experience with this product..."
+                  />
+                </div>
+                
+                {/* Submit Button */}
+                <div className="flex justify-end space-x-2 pt-2">
+                  <button 
+                    onClick={() => setShowProductSelection(true)}
+                    className="px-4 py-2 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors font-semibold text-sm"
+                  >
+                    Back
+                  </button>
+                  <button 
+                    onClick={handleSubmitReview}
+                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold text-sm flex items-center"
+                  >
+                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Submit Review
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Premium Footer */}
       <div className="text-center mt-16">
@@ -448,6 +687,13 @@ export default function WealthBridgePremiumReviewSystem() {
       </div>
 
       <style jsx>{`
+        .line-clamp-2 {
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
         .line-clamp-3 {
           display: -webkit-box;
           -webkit-line-clamp: 3;

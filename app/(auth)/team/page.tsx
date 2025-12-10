@@ -1,621 +1,593 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  FiChevronDown, 
-  FiChevronUp, 
-  FiPhone, 
+  FiUsers, 
   FiDollarSign, 
-  FiUserCheck,
-  FiUserX,
-  FiUsers,
-  FiActivity,
-  FiUser,
-  FiFilter,
-  FiCreditCard,
+  FiAward, 
+  FiCalendar, 
   FiTrendingUp,
-  FiTrendingDown,
-  FiAward
+  FiUserCheck,
+  FiStar,
+  FiPackage,
+  FiMessageCircle,
+  FiCheckCircle,
+  FiPercent
 } from 'react-icons/fi';
-import { motion } from 'framer-motion';
 
 interface TeamMember {
   id: string;
   name: string;
-  email: string;
-  phone: string;
-  level: number;
-  status: 'active' | 'inactive';
-  deposit: number;
-  withdrawal: number;
-  commission: number;
+  level: 1 | 2 | 3;
+  depositAmount: number;
+  isActive: boolean;
   joinDate: string;
-  sponsorId: string;
+  commissionEarned: number;
+  avatar: string;
 }
 
-interface LevelStats {
-  total: number;
-  active: number;
-  inactive: number;
-  deposit: number;
-  activeDeposit: number;
-  withdrawal: number;
-  commission: number;
+interface CommissionEarning {
+  level: number;
+  percentage: number;
+  fromMember: string;
+  amount: number;
+  date: string;
 }
 
-interface TeamData {
-  direct: number;
-  team: number;
-  teamDeposits: number;
-  activeTeamDeposits: number;
-  teamWithdrawals: number;
-  teamCommission: number;
-  ownAccount: {
-    deposit: number;
-    withdrawal: number;
-  };
-  members: TeamMember[];
+interface BonusReward {
+  id: string;
+  name: string;
+  requiredMembers: number;
+  bonusAmount: number;
+  achieved: boolean;
+  claimed: boolean;
 }
 
-const StatCard: React.FC<{
-  icon: React.ReactNode;
-  title: string;
-  value: string | number;
-  subtitle?: string;
-  color?: 'blue' | 'purple' | 'green' | 'red';
-}> = ({ icon, title, value, subtitle = '', color = 'blue' }) => {
-  const colors = {
-    blue: 'bg-blue-50 text-blue-600 border-blue-200',
-    purple: 'bg-purple-50 text-purple-600 border-purple-200',
-    green: 'bg-green-50 text-green-600 border-green-200',
-    red: 'bg-red-50 text-red-600 border-red-200'
-  };
+interface MonthlySalary {
+  id: string;
+  tier: string;
+  requiredActiveMembers: number;
+  requiredTotalDeposit: number;
+  salaryAmount: number;
+  eligible: boolean;
+}
 
-  return (
-    <motion.div 
-      whileHover={{ y: -2 }}
-      className={`p-3 rounded-lg shadow-sm border ${colors[color]}`}
-    >
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-xs sm:text-sm font-medium">{title}</p>
-          <p className="text-xl sm:text-2xl font-bold">{value}</p>
-          {subtitle && <p className="text-xs opacity-80">{subtitle}</p>}
-        </div>
-        <div className="p-1 sm:p-2 rounded-full bg-white/50">
-          {icon}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+interface SeminarSupport {
+  id: string;
+  requirement: string;
+  description: string;
+  status: string;
+}
 
-const LevelStatItem: React.FC<{ level: number; stats: LevelStats }> = ({ level, stats }) => {
-  const levelColors = [
-    'bg-purple-100 text-purple-800',
-    'bg-green-100 text-green-800',
-    'bg-amber-100 text-amber-800'
-  ];
+export default function TeamCommissionPage() {
+  // Team data
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
+    { id: '1', name: 'John Smith', level: 1, depositAmount: 100, isActive: true, joinDate: '2024-01-15', commissionEarned: 20, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=center' },
+    { id: '2', name: 'Sarah Johnson', level: 1, depositAmount: 100, isActive: true, joinDate: '2024-01-16', commissionEarned: 20, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=center' },
+    { id: '3', name: 'Mike Wilson', level: 2, depositAmount: 100, isActive: true, joinDate: '2024-01-10', commissionEarned: 15, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=center' },
+    { id: '4', name: 'Emma Davis', level: 2, depositAmount: 100, isActive: true, joinDate: '2024-01-12', commissionEarned: 15, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=center' },
+    { id: '5', name: 'David Brown', level: 3, depositAmount: 100, isActive: true, joinDate: '2024-01-05', commissionEarned: 10, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=center' },
+    { id: '6', name: 'Lisa Miller', level: 3, depositAmount: 100, isActive: true, joinDate: '2024-01-08', commissionEarned: 10, avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=center' },
+    { id: '7', name: 'Robert Taylor', level: 1, depositAmount: 100, isActive: true, joinDate: '2024-01-20', commissionEarned: 20, avatar: 'https://images.unsplash.com/photo-1507591064344-4c6ce005-128?w=100&h=100&fit=crop&crop=center' },
+    { id: '8', name: 'Jennifer Lee', level: 2, depositAmount: 100, isActive: false, joinDate: '2024-01-18', commissionEarned: 0, avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop&crop=center' },
+  ]);
 
-  return (
-    <div>
-      <div className="flex justify-between items-center mb-1">
-        <span className={`text-xs font-medium px-2 py-1 rounded-full ${levelColors[level-1]}`}>
-          Level {level}
-        </span>
-        <span className="text-xs sm:text-sm font-medium">
-          {stats.total} members ({stats.active} active / {stats.inactive} inactive)
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-xs">
-        <div className="bg-gray-50 p-1 sm:p-2 rounded">
-          <p className="text-gray-500">Deposit</p>
-          <p className="font-medium">${stats.deposit.toFixed(2)}</p>
-        </div>
-        <div className="bg-gray-50 p-1 sm:p-2 rounded">
-          <p className="text-gray-500">Withdrawal</p>
-          <p className="font-medium">${stats.withdrawal.toFixed(2)}</p>
-        </div>
-        <div className="bg-gray-50 p-1 sm:p-2 rounded">
-          <p className="text-gray-500">Commission</p>
-          <p className="font-medium">${stats.commission.toFixed(2)}</p>
-        </div>
-        <div className="bg-gray-50 p-1 sm:p-2 rounded">
-          <p className="text-gray-500">Active Deposit</p>
-          <p className="font-medium">${stats.activeDeposit.toFixed(2)}</p>
-        </div>
-      </div>
-    </div>
-  );
-};
+  // Commission earnings
+  const [commissionEarnings, setCommissionEarnings] = useState<CommissionEarning[]>([
+    { level: 1, percentage: 20, fromMember: 'John Smith', amount: 20, date: '2024-01-15' },
+    { level: 1, percentage: 20, fromMember: 'Sarah Johnson', amount: 20, date: '2024-01-16' },
+    { level: 2, percentage: 15, fromMember: 'Mike Wilson', amount: 15, date: '2024-01-10' },
+    { level: 2, percentage: 15, fromMember: 'Emma Davis', amount: 15, date: '2024-01-12' },
+    { level: 3, percentage: 10, fromMember: 'David Brown', amount: 10, date: '2024-01-05' },
+    { level: 3, percentage: 10, fromMember: 'Lisa Miller', amount: 10, date: '2024-01-08' },
+  ]);
 
-const FinancialStatItem: React.FC<{ 
-  title: string; 
-  value: string; 
-  icon: React.ReactNode;
-}> = ({ title, value, icon }) => {
-  return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center">
-        <div className="mr-2 p-1 sm:p-2 rounded-full bg-gray-100">
-          {icon}
-        </div>
-        <span className="text-xs sm:text-sm font-medium text-gray-700">{title}</span>
-      </div>
-      <span className="text-sm sm:text-base font-medium">{value}</span>
-    </div>
-  );
-};
+  // Bonus and rewards
+  const [bonusRewards, setBonusRewards] = useState<BonusReward[]>([
+    { id: '1', name: '10 Active Members', requiredMembers: 10, bonusAmount: 30, achieved: false, claimed: false },
+    { id: '2', name: '20 Active Members', requiredMembers: 20, bonusAmount: 60, achieved: false, claimed: false },
+    { id: '3', name: '30 Active Members', requiredMembers: 30, bonusAmount: 100, achieved: false, claimed: false },
+    { id: '4', name: '40 Active Members', requiredMembers: 40, bonusAmount: 150, achieved: false, claimed: false },
+    { id: '5', name: '50 Active Members', requiredMembers: 50, bonusAmount: 200, achieved: false, claimed: false },
+  ]);
 
-const CommissionItem: React.FC<{ level: number; value: number }> = ({ level, value }) => {
-  const levelColors = [
-    'bg-purple-100 text-purple-800',
-    'bg-green-100 text-green-800',
-    'bg-amber-100 text-amber-800'
-  ];
+  // Monthly salary tiers
+  const [monthlySalaries, setMonthlySalaries] = useState<MonthlySalary[]>([
+    { id: 'A', tier: 'A', requiredActiveMembers: 5, requiredTotalDeposit: 5000, salaryAmount: 100, eligible: false },
+    { id: 'B', tier: 'B', requiredActiveMembers: 10, requiredTotalDeposit: 10000, salaryAmount: 200, eligible: false },
+    { id: 'C', tier: 'C', requiredActiveMembers: 15, requiredTotalDeposit: 15000, salaryAmount: 300, eligible: false },
+    { id: 'D', tier: 'D', requiredActiveMembers: 20, requiredTotalDeposit: 20000, salaryAmount: 400, eligible: false },
+    { id: 'E', tier: 'E', requiredActiveMembers: 25, requiredTotalDeposit: 30000, salaryAmount: 500, eligible: false },
+  ]);
 
-  return (
-    <div className="flex justify-between items-center">
-      <span className={`text-xs font-medium px-2 py-1 rounded-full ${levelColors[level-1]}`}>
-        Level {level} Commission
-      </span>
-      <span className="font-medium">${value.toFixed(2)}</span>
-    </div>
-  );
-};
+  // Seminar support
+  const [seminarSupport, setSeminarSupport] = useState<SeminarSupport[]>([
+    { 
+      id: '1', 
+      requirement: 'Minimum 10 Active Members with $100 Deposit', 
+      description: 'সেমিনার বা প্রোগ্রাম করার জন্য মিনিমাম ১০ টা ১০০ ডলার ডিপোজিট একটিভ মেম্বার থাকতে হবে',
+      status: 'Check Eligibility'
+    }
+  ]);
 
-const DetailItem: React.FC<{ 
-  label: string; 
-  value: string | React.ReactNode; 
-  icon?: React.ReactNode;
-}> = ({ label, value, icon }) => {
-  return (
-    <div className="flex items-start">
-      {icon && (
-        <div className="mr-2 mt-0.5 text-gray-500">
-          {icon}
-        </div>
-      )}
-      <div>
-        <p className="text-xs text-gray-500">{label}</p>
-        <div className="font-medium text-sm">
-          {typeof value === 'string' ? (
-            <span className="break-all">{value}</span>
-          ) : (
-            value
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const MemberCard: React.FC<{ 
-  member: TeamMember;
-  isExpanded: boolean;
-  onToggle: (id: string) => void;
-}> = ({ member, isExpanded, onToggle }) => {
-  const statusColor = member.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-  const levelColors = [
-    'bg-purple-100 text-purple-800',
-    'bg-green-100 text-green-800',
-    'bg-amber-100 text-amber-800'
-  ];
-
-  return (
-    <motion.div 
-      layout
-      className={`border rounded-lg overflow-hidden ${isExpanded ? 'border-blue-300' : 'border-gray-200'}`}
-    >
-      <div 
-        className={`p-3 sm:p-4 cursor-pointer ${isExpanded ? 'bg-blue-50' : 'bg-white'}`}
-        onClick={() => onToggle(member.id)}
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <div className="flex items-start sm:items-center space-x-3 flex-1 min-w-0">
-            <div className={`p-1.5 sm:p-2 rounded-full ${statusColor}`}>
-              {member.status === 'active' ? <FiUserCheck size={16} /> : <FiUserX size={16} />}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
-                <h3 className="font-medium text-sm sm:text-base truncate">{member.name}</h3>
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${levelColors[member.level-1]} mt-1 sm:mt-0`}>
-                  Level {member.level}
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-gray-600 truncate">{member.email}</p>
-              
-              <div className="sm:hidden mt-1 grid grid-cols-2 gap-1 text-xs">
-                <div>
-                  <p className="text-gray-500">Deposit</p>
-                  <p className="font-semibold text-blue-600">${member.deposit.toFixed(2)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-500">Withdrawal</p>
-                  <p className="font-semibold text-green-600">${member.withdrawal.toFixed(2)}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="hidden sm:flex items-center justify-end gap-3">
-            <div className="grid grid-cols-3 gap-2 text-sm">
-              <div className="text-center min-w-[70px]">
-                <p className="text-xs text-gray-500">Deposit</p>
-                <p className="font-semibold text-blue-600">${member.deposit.toFixed(2)}</p>
-              </div>
-              <div className="text-center min-w-[70px]">
-                <p className="text-xs text-gray-500">Withdrawal</p>
-                <p className="font-semibold text-green-600">${member.withdrawal.toFixed(2)}</p>
-              </div>
-              <div className="flex items-center justify-center">
-                <button className="p-1 rounded-full hover:bg-gray-200">
-                  {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="sm:hidden flex justify-end">
-            <button 
-              className="p-1 rounded-full hover:bg-gray-200"
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggle(member.id);
-              }}
-            >
-              {isExpanded ? <FiChevronUp /> : <FiChevronDown />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {isExpanded && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: 'auto' }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{ duration: 0.2 }}
-          className="bg-gray-50 p-3 sm:p-4 border-t"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div className="space-y-2">
-              <DetailItem label="Member ID" value={member.id} icon={<FiUser />} />
-              <DetailItem label="Sponsor ID" value={member.sponsorId} icon={<FiUsers />} />
-              <DetailItem label="Phone" value={member.phone} icon={<FiPhone />} />
-              <DetailItem label="Joined Date" value={member.joinDate} icon={<FiActivity />} />
-            </div>
-            <div className="space-y-2">
-              <DetailItem 
-                label="Status" 
-                value={
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
-                    {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
-                  </span>
-                } 
-                icon={member.status === 'active' ? <FiUserCheck /> : <FiUserX />}
-              />
-              <DetailItem label="Commission" value={`$${member.commission.toFixed(2)}`} icon={<FiDollarSign />} />
-              <DetailItem label="Level" value={member.level} icon={<FiAward />} />
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </motion.div>
-  );
-};
-
-const TeamDashboard: React.FC = () => {
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
-  const [levelFilter, setLevelFilter] = useState<number | null>(null);
-  const [expandedMember, setExpandedMember] = useState<string | null>(null);
-
-  const teamData: TeamData = {
-    direct: 5,
-    team: 39,
-    teamDeposits: 723.00,
-    activeTeamDeposits: 650.00,
-    teamWithdrawals: 3344.79,
-    teamCommission: 1250.50,
-    ownAccount: {
-      deposit: 2500.00,
-      withdrawal: 1500.00
-    },
-    members: [
-      {
-        id: '758881',
-        name: 'Majedur Rahman',
-        email: 'mdm*******@gmail.com',
-        phone: '01712345678',
-        level: 1,
-        status: 'active',
-        deposit: 500.00,
-        withdrawal: 200.00,
-        commission: 150.00,
-        joinDate: '2025-01-01 20:31:28',
-        sponsorId: '227429'
-      },
-      {
-        id: '926999',
-        name: 'Bahar Uddin',
-        email: 'Ano********@gmail.com',
-        phone: '01787654321',
-        level: 1,
-        status: 'inactive',
-        deposit: 0.00,
-        withdrawal: 0.00,
-        commission: 0.00,
-        joinDate: '2025-01-01 20:36:09',
-        sponsorId: '227429'
-      },
-      {
-        id: '403513',
-        name: 'Md Ashek Mahmud',
-        email: 'sop********@gmail.com',
-        phone: '01755556666',
-        level: 2,
-        status: 'active',
-        deposit: 200.00,
-        withdrawal: 100.00,
-        commission: 50.00,
-        joinDate: '2025-01-01 20:36:44',
-        sponsorId: '227429'
-      }
-    ]
-  };
-
-  const calculateStats = (): {
-    level1: LevelStats;
-    level2: LevelStats;
-    level3: LevelStats;
-    totalActive: number;
-    totalInactive: number;
-    totalDeposit: number;
-    activeDeposit: number;
-    totalWithdrawal: number;
-    totalCommission: number;
-  } => {
-    const stats = {
-      level1: { total: 0, active: 0, inactive: 0, deposit: 0, activeDeposit: 0, withdrawal: 0, commission: 0 },
-      level2: { total: 0, active: 0, inactive: 0, deposit: 0, activeDeposit: 0, withdrawal: 0, commission: 0 },
-      level3: { total: 0, active: 0, inactive: 0, deposit: 0, activeDeposit: 0, withdrawal: 0, commission: 0 },
-      totalActive: 0,
-      totalInactive: 0,
-      totalDeposit: 0,
-      activeDeposit: 0,
-      totalWithdrawal: 0,
-      totalCommission: 0
-    };
-
-    teamData.members.forEach(member => {
-      if (member.status === 'active') {
-        stats.totalActive++;
-        stats.activeDeposit += member.deposit;
-      } else {
-        stats.totalInactive++;
-      }
-
-      stats.totalDeposit += member.deposit;
-      stats.totalWithdrawal += member.withdrawal;
-      stats.totalCommission += member.commission;
-
-      if (member.level === 1) {
-        stats.level1.total++;
-        if (member.status === 'active') {
-          stats.level1.active++;
-          stats.level1.activeDeposit += member.deposit;
-        } else {
-          stats.level1.inactive++;
-        }
-        stats.level1.deposit += member.deposit;
-        stats.level1.withdrawal += member.withdrawal;
-        stats.level1.commission += member.commission;
-      } else if (member.level === 2) {
-        stats.level2.total++;
-        if (member.status === 'active') {
-          stats.level2.active++;
-          stats.level2.activeDeposit += member.deposit;
-        } else {
-          stats.level2.inactive++;
-        }
-        stats.level2.deposit += member.deposit;
-        stats.level2.withdrawal += member.withdrawal;
-        stats.level2.commission += member.commission;
-      } else if (member.level === 3) {
-        stats.level3.total++;
-        if (member.status === 'active') {
-          stats.level3.active++;
-          stats.level3.activeDeposit += member.deposit;
-        } else {
-          stats.level3.inactive++;
-        }
-        stats.level3.deposit += member.deposit;
-        stats.level3.withdrawal += member.withdrawal;
-        stats.level3.commission += member.commission;
-      }
-    });
-
-    return stats;
-  };
-
-  const stats = calculateStats();
-
-  const toggleMember = (id: string) => {
-    setExpandedMember(expandedMember === id ? null : id);
-  };
-
-  const filteredMembers = teamData.members.filter(member => {
-    const statusMatch = statusFilter === 'all' || member.status === statusFilter;
-    const levelMatch = levelFilter === null || member.level === levelFilter;
-    return statusMatch && levelMatch;
+  // Stats
+  const [stats, setStats] = useState({
+    totalTeamMembers: 0,
+    activeMembers: 0,
+    totalCommission: 0,
+    totalDeposit: 0,
+    availableBonus: 0,
+    monthlySalary: 0,
   });
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-3 sm:p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center">
-          <FiUsers className="mr-2 text-blue-500" />
-          Team Details
-        </h1>
+  // Calculate stats
+  useEffect(() => {
+    const activeMembers = teamMembers.filter(member => member.isActive).length;
+    const totalCommission = commissionEarnings.reduce((sum, earning) => sum + earning.amount, 0);
+    const totalDeposit = teamMembers.reduce((sum, member) => sum + member.depositAmount, 0);
+    
+    // Calculate achieved bonuses
+    const updatedBonuses = bonusRewards.map(bonus => ({
+      ...bonus,
+      achieved: activeMembers >= bonus.requiredMembers
+    }));
+    setBonusRewards(updatedBonuses);
+    
+    const availableBonus = updatedBonuses
+      .filter(bonus => bonus.achieved && !bonus.claimed)
+      .reduce((sum, bonus) => sum + bonus.bonusAmount, 0);
+    
+    // Calculate eligible salaries
+    const updatedSalaries = monthlySalaries.map(salary => ({
+      ...salary,
+      eligible: activeMembers >= salary.requiredActiveMembers && totalDeposit >= salary.requiredTotalDeposit
+    }));
+    setMonthlySalaries(updatedSalaries);
+    
+    const currentSalary = updatedSalaries
+      .filter(salary => salary.eligible)
+      .reduce((max, salary) => Math.max(max, salary.salaryAmount), 0);
+    
+    setStats({
+      totalTeamMembers: teamMembers.length,
+      activeMembers,
+      totalCommission,
+      totalDeposit,
+      availableBonus,
+      monthlySalary: currentSalary,
+    });
+  }, [teamMembers, commissionEarnings]);
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <StatCard 
-            icon={<FiUser className="text-blue-500" />} 
-            title="Direct Members" 
-            value={teamData.direct} 
-            color="blue" 
-          />
-          <StatCard 
-            icon={<FiUsers className="text-purple-500" />} 
-            title="Team Members" 
-            value={`${stats.totalActive} / ${stats.totalInactive}`} 
-            subtitle={`Active / Inactive`}
-            color="purple" 
-          />
-          <StatCard 
-            icon={<FiTrendingUp className="text-green-500" />} 
-            title="Team Deposits" 
-            value={`$${teamData.teamDeposits.toFixed(2)}`} 
-            subtitle={`Active: $${teamData.activeTeamDeposits.toFixed(2)}`}
-            color="green" 
-          />
-          <StatCard 
-            icon={<FiTrendingDown className="text-red-500" />} 
-            title="Team Withdrawals" 
-            value={`$${teamData.teamWithdrawals.toFixed(2)}`} 
-            color="red" 
-          />
+  const handleClaimBonus = (bonusId: string) => {
+    setBonusRewards(bonuses =>
+      bonuses.map(bonus =>
+        bonus.id === bonusId ? { ...bonus, claimed: true } : bonus
+      )
+    );
+    alert('Bonus claimed successfully!');
+  };
+
+  const handleContactSupport = () => {
+    alert('Contacting customer support... Please provide your documents for seminar support verification.');
+  };
+
+  const getLevelColor = (level: number) => {
+    switch(level) {
+      case 1: return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      case 2: return 'bg-gradient-to-r from-green-500 to-green-600';
+      case 3: return 'bg-gradient-to-r from-purple-500 to-purple-600';
+      default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
+    }
+  };
+
+  const getLevelName = (level: number) => {
+    switch(level) {
+      case 1: return '1st Level';
+      case 2: return '2nd Level';
+      case 3: return '3rd Level';
+      default: return 'Unknown';
+    }
+  };
+
+  const getLevelPercentage = (level: number) => {
+    switch(level) {
+      case 1: return '20%';
+      case 2: return '15%';
+      case 3: return '10%';
+      default: return '0%';
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold text-white mb-3">Team Commission & Bonus System</h1>
+          <p className="text-blue-200 text-lg">Maximize your earnings through team building and active participation</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="font-medium text-gray-700 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
-              <FiActivity className="mr-2 text-blue-500" />
-              Level-wise Statistics
-            </h3>
-            <div className="space-y-2 sm:space-y-3">
-              <LevelStatItem level={1} stats={stats.level1} />
-              <LevelStatItem level={2} stats={stats.level2} />
-              <LevelStatItem level={3} stats={stats.level3} />
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-gradient-to-br from-blue-800/50 to-blue-900/50 rounded-2xl p-6 border border-blue-700/50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-blue-300 text-sm">Total Team Members</p>
+                <p className="text-3xl font-bold text-white">{stats.totalTeamMembers}</p>
+              </div>
+              <FiUsers className="w-10 h-10 text-blue-400" />
             </div>
           </div>
 
-          <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="font-medium text-gray-700 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
-              <FiCreditCard className="mr-2 text-green-500" />
-              Financial Overview
-            </h3>
-            <div className="space-y-2 sm:space-y-3">
-              <FinancialStatItem 
-                title="Total Team Deposit" 
-                value={`$${stats.totalDeposit.toFixed(2)}`} 
-                icon={<FiTrendingUp className="text-green-500" />} 
-              />
-              <FinancialStatItem 
-                title="Active Team Deposit" 
-                value={`$${stats.activeDeposit.toFixed(2)}`} 
-                icon={<FiTrendingUp className="text-blue-500" />} 
-              />
-              <FinancialStatItem 
-                title="Total Team Withdrawal" 
-                value={`$${stats.totalWithdrawal.toFixed(2)}`} 
-                icon={<FiTrendingDown className="text-red-500" />} 
-              />
-              <FinancialStatItem 
-                title="Own Account Deposit" 
-                value={`$${teamData.ownAccount.deposit.toFixed(2)}`} 
-                icon={<FiTrendingUp className="text-purple-500" />} 
-              />
+          <div className="bg-gradient-to-br from-green-800/50 to-green-900/50 rounded-2xl p-6 border border-green-700/50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-green-300 text-sm">Active Members</p>
+                <p className="text-3xl font-bold text-white">{stats.activeMembers}</p>
+              </div>
+              <FiUserCheck className="w-10 h-10 text-green-400" />
             </div>
           </div>
 
-          <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
-            <h3 className="font-medium text-gray-700 mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
-              <FiDollarSign className="mr-2 text-purple-500" />
-              Commission Breakdown
-            </h3>
-            <div className="space-y-2 sm:space-y-3">
-              <CommissionItem level={1} value={stats.level1.commission} />
-              <CommissionItem level={2} value={stats.level2.commission} />
-              <CommissionItem level={3} value={stats.level3.commission} />
-              <div className="pt-2 border-t border-gray-100">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base font-medium">Total Commission</span>
-                  <span className="font-bold text-purple-600">
-                    ${teamData.teamCommission.toFixed(2)}
-                  </span>
+          <div className="bg-gradient-to-br from-purple-800/50 to-purple-900/50 rounded-2xl p-6 border border-purple-700/50">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-purple-300 text-sm">Total Commission</p>
+                <p className="text-3xl font-bold text-white">${stats.totalCommission}</p>
+              </div>
+              <FiDollarSign className="w-10 h-10 text-purple-400" />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Team Commission Structure */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Commission Structure */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <FiPercent className="mr-3 text-blue-400" />
+                Team Commission Structure (3 Levels)
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {/* Level 1 */}
+                <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 rounded-xl p-6 border border-blue-700/50">
+                  <div className={`w-16 h-16 rounded-full ${getLevelColor(1)} flex items-center justify-center mx-auto mb-4`}>
+                    <span className="text-white text-xl font-bold">1</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white text-center mb-2">1st Level</h3>
+                  <p className="text-blue-300 text-center text-2xl font-bold mb-4">20% Commission</p>
+                  <div className="text-center">
+                    <p className="text-blue-200 text-sm">For each active member with $100 deposit</p>
+                    <p className="text-white font-semibold mt-2">Earn: $20 per member</p>
+                  </div>
                 </div>
+
+                {/* Level 2 */}
+                <div className="bg-gradient-to-br from-green-900/50 to-green-800/50 rounded-xl p-6 border border-green-700/50">
+                  <div className={`w-16 h-16 rounded-full ${getLevelColor(2)} flex items-center justify-center mx-auto mb-4`}>
+                    <span className="text-white text-xl font-bold">2</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white text-center mb-2">2nd Level</h3>
+                  <p className="text-green-300 text-center text-2xl font-bold mb-4">15% Commission</p>
+                  <div className="text-center">
+                    <p className="text-green-200 text-sm">For each active member with $100 deposit</p>
+                    <p className="text-white font-semibold mt-2">Earn: $15 per member</p>
+                  </div>
+                </div>
+
+                {/* Level 3 */}
+                <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 rounded-xl p-6 border border-purple-700/50">
+                  <div className={`w-16 h-16 rounded-full ${getLevelColor(3)} flex items-center justify-center mx-auto mb-4`}>
+                    <span className="text-white text-xl font-bold">3</span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white text-center mb-2">3rd Level</h3>
+                  <p className="text-purple-300 text-center text-2xl font-bold mb-4">10% Commission</p>
+                  <div className="text-center">
+                    <p className="text-purple-200 text-sm">For each active member with $100 deposit</p>
+                    <p className="text-white font-semibold mt-2">Earn: $10 per member</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Commission Earnings */}
+              <div>
+                <h3 className="text-xl font-bold text-white mb-4">Recent Commission Earnings</h3>
+                <div className="space-y-3">
+                  {commissionEarnings.map((earning, index) => (
+                    <div key={index} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <div className={`w-10 h-10 rounded-full ${getLevelColor(earning.level)} flex items-center justify-center mr-3`}>
+                            <span className="text-white font-bold">{earning.level}</span>
+                          </div>
+                          <div>
+                            <p className="text-white font-semibold">{getLevelName(earning.level)} ({earning.percentage}%)</p>
+                            <p className="text-blue-300 text-sm">From: {earning.fromMember}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-green-400 font-bold text-lg">+${earning.amount}</p>
+                          <p className="text-slate-400 text-sm">{earning.date}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Team Members */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <FiUsers className="mr-3 text-blue-400" />
+                Your Team Members
+              </h2>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-700">
+                      <th className="text-left py-3 px-4 text-blue-300">Member</th>
+                      <th className="text-left py-3 px-4 text-blue-300">Level</th>
+                      <th className="text-left py-3 px-4 text-blue-300">Deposit</th>
+                      <th className="text-left py-3 px-4 text-blue-300">Status</th>
+                      <th className="text-left py-3 px-4 text-blue-300">Commission</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teamMembers.map((member) => (
+                      <tr key={member.id} className="border-b border-slate-800 hover:bg-slate-800/50">
+                        <td className="py-3 px-4">
+                          <div className="flex items-center">
+                            <img 
+                              src={member.avatar} 
+                              alt={member.name}
+                              className="w-10 h-10 rounded-full mr-3 border-2 border-slate-600"
+                            />
+                            <div>
+                              <p className="text-white font-semibold">{member.name}</p>
+                              <p className="text-slate-400 text-sm">Joined: {member.joinDate}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getLevelColor(member.level)} text-white`}>
+                            {getLevelName(member.level)}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="text-white">${member.depositAmount}</p>
+                        </td>
+                        <td className="py-3 px-4">
+                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${member.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                            {member.isActive ? 'Active' : 'Inactive'}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4">
+                          <p className="text-green-400 font-semibold">${member.commissionEarned}</p>
+                          <p className="text-slate-400 text-xs">{getLevelPercentage(member.level)} Commission</p>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Bonuses & Salaries */}
+          <div className="space-y-8">
+            {/* Active Member Bonus */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <FiAward className="mr-3 text-yellow-400" />
+                Active Member Bonus
+              </h2>
+              
+              <div className="space-y-4">
+                {bonusRewards.map((bonus) => (
+                  <div 
+                    key={bonus.id} 
+                    className={`rounded-xl p-4 border ${bonus.achieved ? 'border-green-500/50 bg-green-500/10' : 'border-slate-700 bg-slate-800/50'}`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white font-semibold">{bonus.name}</p>
+                        <p className="text-slate-400 text-sm">Requires: {bonus.requiredMembers} active members</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-yellow-400 font-bold text-lg">${bonus.bonusAmount}</p>
+                        {bonus.achieved ? (
+                          <button
+                            onClick={() => handleClaimBonus(bonus.id)}
+                            disabled={bonus.claimed}
+                            className={`mt-2 px-4 py-1 rounded-full text-sm font-semibold ${bonus.claimed ? 'bg-green-500/50 text-green-300' : 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:opacity-90'}`}
+                          >
+                            {bonus.claimed ? 'Claimed' : 'Claim Bonus'}
+                          </button>
+                        ) : (
+                          <p className="text-red-400 text-sm mt-2">Not achieved</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <div className="w-full bg-slate-700 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${bonus.achieved ? 'bg-green-500' : 'bg-blue-500'}`}
+                          style={{ width: `${Math.min((stats.activeMembers / bonus.requiredMembers) * 100, 100)}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-slate-400 text-xs mt-1 text-center">
+                        {stats.activeMembers}/{bonus.requiredMembers} Active Members
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 rounded-xl border border-yellow-700/50">
+                <p className="text-yellow-300 text-sm text-center">
+                  Total Available Bonus: <span className="font-bold text-white">${stats.availableBonus}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Monthly Salary */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <FiCalendar className="mr-3 text-green-400" />
+                Monthly Salary Tiers
+              </h2>
+              
+              <div className="space-y-4">
+                {monthlySalaries.map((salary) => (
+                  <div 
+                    key={salary.id} 
+                    className={`rounded-xl p-4 border ${salary.eligible ? 'border-green-500/50 bg-green-500/10' : 'border-slate-700 bg-slate-800/50'}`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <div className="flex items-center">
+                          <span className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${salary.eligible ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
+                            {salary.tier}
+                          </span>
+                          <div>
+                            <p className="text-white font-semibold">Tier {salary.tier}</p>
+                            <p className="text-slate-400 text-sm">${salary.salaryAmount}/month</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        {salary.eligible ? (
+                          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold">
+                            ✅ Eligible
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-semibold">
+                            Requirements
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 grid grid-cols-2 gap-2">
+                      <div className="bg-slate-800/50 rounded-lg p-3">
+                        <p className="text-slate-400 text-xs">Active Members</p>
+                        <p className={`text-sm font-semibold ${stats.activeMembers >= salary.requiredActiveMembers ? 'text-green-400' : 'text-white'}`}>
+                          {stats.activeMembers}/{salary.requiredActiveMembers}
+                        </p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-lg p-3">
+                        <p className="text-slate-400 text-xs">Total Deposit</p>
+                        <p className={`text-sm font-semibold ${stats.totalDeposit >= salary.requiredTotalDeposit ? 'text-green-400' : 'text-white'}`}>
+                          ${stats.totalDeposit.toLocaleString()}/${salary.requiredTotalDeposit.toLocaleString()}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6 p-4 bg-gradient-to-r from-green-900/30 to-green-800/30 rounded-xl border border-green-700/50">
+                <p className="text-green-300 text-center">
+                  Your Current Monthly Salary: <span className="font-bold text-white text-xl">${stats.monthlySalary}</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Seminar Support */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
+                <FiMessageCircle className="mr-3 text-blue-400" />
+                Seminar/Program Support
+              </h2>
+              
+              <div className="space-y-6">
+                {seminarSupport.map((support) => (
+                  <div key={support.id} className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-xl p-6 border border-blue-700/50">
+                    <div className="flex items-start mb-4">
+                      <FiCheckCircle className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" />
+                      <div>
+                        <h3 className="text-white font-semibold mb-2">Requirements:</h3>
+                        <p className="text-blue-300">{support.requirement}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="mb-4">
+                      <h4 className="text-white font-semibold mb-2">Description:</h4>
+                      <p className="text-slate-300 text-sm">{support.description}</p>
+                    </div>
+                    
+                    <div className="mb-6">
+                      <h4 className="text-white font-semibold mb-2">Your Current Status:</h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-slate-800/50 rounded-lg p-3">
+                          <p className="text-slate-400 text-xs">Active Members</p>
+                          <p className={`text-lg font-bold ${stats.activeMembers >= 10 ? 'text-green-400' : 'text-white'}`}>
+                            {stats.activeMembers}/10
+                          </p>
+                        </div>
+                        <div className="bg-slate-800/50 rounded-lg p-3">
+                          <p className="text-slate-400 text-xs">$100 Deposit Members</p>
+                          <p className={`text-lg font-bold ${teamMembers.filter(m => m.depositAmount >= 100).length >= 10 ? 'text-green-400' : 'text-white'}`}>
+                            {teamMembers.filter(m => m.depositAmount >= 100).length}/10
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={handleContactSupport}
+                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center"
+                    >
+                      <FiMessageCircle className="mr-2" />
+                      Contact Customer Support
+                    </button>
+                    
+                    <p className="text-slate-400 text-xs mt-3 text-center">
+                      কোম্পানি কাস্টমার সাপোর্টে ডকুমেন্টসহ কথা বলতে হবে
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6 bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex-1 flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <div className="flex-1 flex items-center bg-gray-50 rounded-lg p-2 border border-gray-200">
-              <FiFilter className="text-gray-500 mr-2 min-w-[16px]" />
-              <select 
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
-                className="bg-transparent w-full text-xs sm:text-sm outline-none"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
+        {/* Summary Footer */}
+        <div className="mt-12 bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
+          <h2 className="text-2xl font-bold text-white mb-6 text-center">Total Earning Summary</h2>
+          
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
+              <p className="text-blue-300 text-sm">Commission Earnings</p>
+              <p className="text-3xl font-bold text-green-400">${stats.totalCommission}</p>
+              <p className="text-slate-400 text-sm mt-2">From team members</p>
             </div>
             
-            <div className="flex-1 flex items-center bg-gray-50 rounded-lg p-2 border border-gray-200">
-              <FiFilter className="text-gray-500 mr-2 min-w-[16px]" />
-              <select 
-                value={levelFilter || ''}
-                onChange={(e) => setLevelFilter(e.target.value ? parseInt(e.target.value) : null)}
-                className="bg-transparent w-full text-xs sm:text-sm outline-none"
-              >
-                <option value="">All Levels</option>
-                <option value="1">Level 1</option>
-                <option value="2">Level 2</option>
-                <option value="3">Level 3</option>
-              </select>
+            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
+              <p className="text-yellow-300 text-sm">Available Bonus</p>
+              <p className="text-3xl font-bold text-yellow-400">${stats.availableBonus}</p>
+              <p className="text-slate-400 text-sm mt-2">From active members</p>
+            </div>
+            
+            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
+              <p className="text-green-300 text-sm">Monthly Salary</p>
+              <p className="text-3xl font-bold text-green-400">${stats.monthlySalary}</p>
+              <p className="text-slate-400 text-sm mt-2">Current eligible tier</p>
+            </div>
+            
+            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
+              <p className="text-purple-300 text-sm">Potential Monthly</p>
+              <p className="text-3xl font-bold text-purple-400">${stats.totalCommission + stats.availableBonus + stats.monthlySalary}</p>
+              <p className="text-slate-400 text-sm mt-2">Total potential earnings</p>
             </div>
           </div>
-          <div className="sm:w-auto flex items-center justify-center bg-gray-50 rounded-lg p-2 border border-gray-200">
-            <span className="text-xs sm:text-sm text-gray-700">
-              Showing: {filteredMembers.length} members
-            </span>
-          </div>
-        </div>
-
-        <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="font-medium text-gray-700 mb-3 sm:mb-4 flex items-center text-sm sm:text-base">
-            <FiUsers className="mr-2 text-blue-500" />
-            Team Members ({filteredMembers.length})
-            <span className="ml-2 text-xs text-gray-500 hidden sm:inline">
-              {statusFilter === 'all' ? '' : `${statusFilter} `} 
-              {levelFilter ? `Level ${levelFilter}` : ''}
-            </span>
-          </h3>
-
-          {filteredMembers.length === 0 ? (
-            <div className="text-center py-6 sm:py-8 text-gray-500">
-              No members found matching your filters
-            </div>
-          ) : (
-            <div className="space-y-2 sm:space-y-3">
-              {filteredMembers.map(member => (
-                <MemberCard 
-                  key={member.id} 
-                  member={member} 
-                  isExpanded={expandedMember === member.id}
-                  onToggle={toggleMember}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
-};
-
-export default TeamDashboard;
+}
