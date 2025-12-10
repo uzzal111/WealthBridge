@@ -21,12 +21,11 @@ export default function Navbar() {
     {
       title: "My Wallet",
       items: [
-        { name: "Deposit", icon: <FiDownload />, path: "/wallet/deposit" },
-        { name: "Buy / Sell", icon: <FiDollarSign />, path: "/wallet/buy-sell" },
-        { name: "Withdraw", icon: <FiCreditCard />, path: "/wallet/withdraw" },
-        { name: "Order History", icon: <FiList />, path: "/wallet/orders" },
-        { name: "Transaction History", icon: <FiClock />, path: "/wallet/transactions" },
-        { name: "My Reward Point", icon: <FiAward />, path: "/wallet/rewards" }
+        { name: "Deposit", icon: <FiDownload />, path: "/deposit" },
+        { name: "Withdraw", icon: <FiCreditCard />, path: "/withdraw" },
+        { name: "Order History", icon: <FiList />, path: "/order" },
+        { name: "Transaction History", icon: <FiClock />, path: "/transactions" },
+        { name: "My Reward Point", icon: <FiAward />, path: "/rewards" }
       ]
     },
     {

@@ -1,249 +1,149 @@
 'use client';
 
 import { useState } from 'react';
-import { FiArrowUp, FiCopy, FiCheck, FiClock, FiInfo, FiGift, FiAlertTriangle } from 'react-icons/fi';
-import Link from 'next/link';
+import { FiCopy, FiCheck } from 'react-icons/fi';
+
+const TRC20_ADDRESS = "TJxZ9jVk6nCvXz8eYwLpA7bQmN3sRt4Uv5";
 
 export default function DepositPage() {
-  const [txId, setTxId] = useState<string>('');
-  const [copiedAddress, setCopiedAddress] = useState(false);
-  const [copiedTxId, setCopiedTxId] = useState<string | null>(null);
-  const [showHistory, setShowHistory] = useState(false);
+  const [copied, setCopied] = useState<boolean>(false);
+  const [amount, setAmount] = useState<string>('30');
 
-  const walletAddress = 'TNPdZ4pJcG9WJfVZ8Jk7vL5mRtNxY8zX9B';
-  const network = 'TRC20';
-  const minDeposit = 30;
-  const qrCodeImage = '/images/deposit-qr-code.png';
-
-  const depositHistory = [
-    { id: '1', amount: 50, status: 'Completed', date: '2023-06-15 14:30', txId: '0x1234567890abcdef1234567890abcdef1234567890abcdef' },
-    { id: '2', amount: 100, status: 'Pending', date: '2023-06-14 09:15', txId: '0x9876543210fedcba9876543210fedcba9876543210fedcba' },
-  ];
-
-  const handleCopyAddress = () => {
-    navigator.clipboard.writeText(walletAddress);
-    setCopiedAddress(true);
-    setTimeout(() => setCopiedAddress(false), 2000);
+  // Copy address to clipboard
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(TRC20_ADDRESS);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleCopyTxId = (txId: string) => {
-    navigator.clipboard.writeText(txId);
-    setCopiedTxId(txId);
-    setTimeout(() => setCopiedTxId(null), 2000);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!txId) {
-      alert('Please enter your Transaction ID');
+  // Handle confirm deposit
+  const handleConfirm = () => {
+    if (!amount || parseInt(amount) < 30) {
+      alert('Minimum deposit amount is 30 USDT');
       return;
     }
-    
-    alert(`Deposit submitted!\nTX ID: ${txId}\n\nYour deposit will be processed after network confirmation.`);
-    setTxId('');
-  };
-
-  const formatTxId = (txId: string) => {
-    return `${txId.substring(0, 6)}...${txId.substring(txId.length - 4)}`;
+    alert(`Please send ${amount} USDT to the TRC20 address provided`);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 p-4 md:p-8 flex items-center justify-center">
-      <div className="w-full max-w-lg">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-white/20">
-          {/* Card Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white">
-            <div className="flex justify-between items-start">
-              <div>
-                <Link href="/asset" className="inline-flex items-center text-sm text-white/80 hover:text-white mb-2">
-                  <FiArrowUp className="rotate-90 mr-1" /> Back to Wallet
-                </Link>
-                <h1 className="text-2xl font-bold">Deposit USDT ({network})</h1>
-                <p className="text-white/90 mt-1">Secure and fast deposits</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 py-4 px-3 sm:py-8 sm:px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Deposit USDT (TRC20)</h1>
+          <p className="text-blue-300 mt-1 text-sm sm:text-base">Send USDT to the address below</p>
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-md mx-auto">
+          {/* QR Code Section */}
+          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-4 sm:p-6 md:p-8 border border-slate-700 mb-6">
+            <div className="text-center mb-4">
+              <h2 className="text-lg sm:text-xl font-bold text-white">Scan QR Code</h2>
+              <p className="text-slate-400 mt-1 text-xs sm:text-sm">Use your wallet to scan</p>
+            </div>
+
+            {/* QR Code Image */}
+            <div className="flex justify-center mb-4 sm:mb-6">
+              <div className="bg-white p-3 sm:p-4 rounded-lg sm:rounded-xl border-2 sm:border-4 border-green-500/20">
+                <img 
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`tron:${TRC20_ADDRESS}?amount=${amount}&token=USDT`)}`}
+                  alt="USDT TRC20 QR Code"
+                  className="w-48 h-48 sm:w-56 sm:h-56"
+                />
               </div>
-              <button 
-                onClick={() => setShowHistory(!showHistory)}
-                className="p-2 bg-white/20 rounded-full hover:bg-white/30 transition"
-                aria-label="Transaction history"
+            </div>
+
+            {/* Amount Input */}
+            <div className="mb-4 sm:mb-6">
+              <label className="block text-slate-300 text-xs sm:text-sm font-medium mb-2">
+                Amount (Min: 30 USDT)
+              </label>
+              <div className="relative">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 font-bold sm:text-xl">
+                  $
+                </div>
+                <input
+                  type="text"
+                  value={amount}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value === '' || (/^\d+$/.test(value))) {
+                      setAmount(value);
+                    }
+                  }}
+                  className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-slate-800 border-2 border-slate-700 rounded-lg sm:rounded-xl text-white text-lg sm:text-2xl font-bold focus:outline-none focus:border-green-500 transition-colors text-center"
+                  placeholder="30"
+                />
+                <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 font-semibold text-sm">
+                  USDT
+                </div>
+              </div>
+            </div>
+
+            {/* TRC20 Address */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-base sm:text-lg font-bold text-white">TRC20 Address</h3>
+                <button
+                  onClick={copyToClipboard}
+                  className="px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center text-xs sm:text-sm font-semibold"
+                >
+                  {copied ? (
+                    <>
+                      <FiCheck className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
+                      Copied
+                    </>
+                  ) : (
+                    <>
+                      <FiCopy className="mr-1 sm:mr-2 w-3 h-3 sm:w-4 sm:h-4" />
+                      Copy
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Address Display */}
+              <div className="bg-slate-800/50 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-slate-700 mb-4 sm:mb-6">
+                <div className="font-mono text-xs sm:text-sm md:text-base text-white break-all text-center leading-tight">
+                  {TRC20_ADDRESS}
+                </div>
+              </div>
+
+              {/* Confirm Button */}
+              <button
+                onClick={handleConfirm}
+                className="w-full py-3 sm:py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg sm:rounded-xl font-bold text-base sm:text-lg hover:from-green-700 hover:to-green-800 transition-all duration-300"
               >
-                <FiClock />
+                Confirm ${amount || '0'} USDT
               </button>
+
+              {/* Minimum Info */}
+              <div className="text-center mt-3">
+                <p className="text-slate-400 text-xs sm:text-sm">
+                  Min: <span className="text-green-400 font-bold">30 USDT</span>
+                </p>
+              </div>
             </div>
           </div>
 
-          {/* Transaction History Panel */}
-          {showHistory && (
-            <div className="bg-gray-50 p-4 border-b border-gray-200">
-              <h3 className="font-medium text-gray-800 mb-3 flex items-center">
-                <FiClock className="mr-2 text-indigo-500" /> Deposit History
-              </h3>
-              <div className="space-y-3 max-h-60 overflow-y-auto">
-                {depositHistory.map(deposit => (
-                  <div key={deposit.id} className="border-b border-gray-200 pb-3 last:border-0">
-                    <div className="flex justify-between">
-                      <div>
-                        <p className="font-medium">${deposit.amount} USDT</p>
-                        <p className="text-xs text-gray-500">{deposit.date}</p>
-                      </div>
-                      <div className="text-right">
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          deposit.status === 'Completed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
-                        }`}>
-                          {deposit.status}
-                        </span>
-                        <div className="flex items-center justify-end mt-1">
-                          <p className="text-xs text-gray-500">{formatTxId(deposit.txId)}</p>
-                          <button 
-                            onClick={() => handleCopyTxId(deposit.txId)}
-                            className="text-gray-400 hover:text-gray-600 ml-1 p-1 rounded-full hover:bg-gray-200 transition"
-                            title="Copy full TX ID"
-                          >
-                            {copiedTxId === deposit.txId ? (
-                              <FiCheck className="text-green-500" size={12} />
-                            ) : (
-                              <FiCopy size={12} />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Card Body */}
-          <div className="p-6">
-            {/* QR Code Section */}
-            <div className="bg-indigo-50 rounded-xl p-4 mb-6 text-center border border-indigo-100">
-              <div className="w-48 h-48 mx-auto mb-4 flex items-center justify-center">
-                <img 
-                  src={qrCodeImage} 
-                  alt="Deposit QR Code" 
-                  className="w-full h-full object-contain rounded-md shadow-inner"
-                />
-              </div>
-              <p className="text-sm text-indigo-700 font-medium">Scan QR code to deposit</p>
-            </div>
-
-            {/* Wallet Address */}
-            <div className="mb-6">
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                Your {network} Deposit Address
-              </label>
-              <div className="flex items-center justify-between bg-gray-50 border border-gray-200 px-4 py-3 rounded-lg hover:bg-gray-100 transition">
-                <p className="text-sm font-mono truncate">{walletAddress}</p>
-                <button 
-                  onClick={handleCopyAddress}
-                  className="text-indigo-600 hover:text-indigo-800 ml-2 p-1.5 rounded-full hover:bg-indigo-50 transition"
-                  title="Copy to clipboard"
-                  aria-label="Copy wallet address"
-                >
-                  {copiedAddress ? <FiCheck className="text-green-500" /> : <FiCopy />}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500 mt-2 flex items-start">
-                <FiInfo className="mr-1.5 mt-0.5 flex-shrink-0" />
-                <span>Only send {network} USDT to this address. Sending other assets may result in permanent loss.</span>
-              </p>
-            </div>
-
-            {/* Transaction Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Transaction ID */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Transaction Hash (TXID)
-                </label>
-                <input
-                  type="text"
-                  value={txId}
-                  onChange={(e) => setTxId(e.target.value)}
-                  placeholder="Paste your transaction hash here"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white hover:border-indigo-300 transition"
-                  required
-                />
-                <p className="text-xs text-gray-500 mt-2 flex items-start">
-                  <FiInfo className="mr-1.5 mt-0.5 flex-shrink-0" />
-                  <span>Find this in your wallet's transaction history after sending USDT</span>
-                </p>
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={!txId}
-                className={`w-full py-3.5 rounded-lg font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg ${
-                  !txId ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
-              >
-                Confirm Deposit
-              </button>
-            </form>
-
-            {/* Security & Information Section */}
-            <div className="mt-6 space-y-4">
-              <div className="p-4 bg-blue-50/80 rounded-lg border border-blue-100">
-                <h4 className="text-sm font-medium text-blue-800 flex items-center mb-2">
-                  <FiInfo className="mr-2 flex-shrink-0" /> Deposit Guidelines
-                </h4>
-                <ul className="text-xs text-blue-700 space-y-1.5">
-                  <li className="flex items-start">
-                    <span className="text-blue-500 mr-1.5 mt-0.5">•</span>
-                    <span><span className="font-semibold">Minimum deposit:</span> ${minDeposit} USDT</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-500 mr-1.5 mt-0.5">•</span>
-                    <span><span className="font-semibold">Network:</span> {network} only (TRC20 network)</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-blue-500 mr-1.5 mt-0.5">•</span>
-                    <span><span className="font-semibold">Processing time:</span> 1-3 network confirmations (~5-15 minutes)</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-amber-50/80 rounded-lg border border-amber-100">
-                <h4 className="text-sm font-medium text-amber-800 flex items-center mb-2">
-                  <FiAlertTriangle className="mr-2 flex-shrink-0" /> Security Notice
-                </h4>
-                <ul className="text-xs text-amber-700 space-y-1.5">
-                  <li className="flex items-start">
-                    <span className="text-amber-500 mr-1.5 mt-0.5">•</span>
-                    <span>Never send USDT from exchange wallets directly. Withdraw to your private wallet first.</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-500 mr-1.5 mt-0.5">•</span>
-                    <span>Double-check the network before sending. We only support {network}.</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-500 mr-1.5 mt-0.5">•</span>
-                    <span>For large deposits, consider sending a small test amount first.</span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="p-4 bg-green-50/80 rounded-lg border border-green-100">
-                <h4 className="text-sm font-medium text-green-800 flex items-center mb-2">
-                  <FiGift className="mr-2 flex-shrink-0" /> Bonus Information
-                </h4>
-                <ul className="text-xs text-green-700 space-y-1.5">
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-1.5 mt-0.5">•</span>
-                    <span><span className="font-semibold">5% bonus</span> on deposits over $100 USDT</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-1.5 mt-0.5">•</span>
-                    <span>Bonuses are credited automatically after deposit confirmation</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-green-500 mr-1.5 mt-0.5">•</span>
-                    <span>Bonus amounts are subject to terms and conditions</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
+          {/* Simple Info Box */}
+          <div className="bg-gradient-to-br from-blue-900/30 to-blue-800/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-700/50">
+            <h3 className="text-base sm:text-lg font-bold text-white mb-3">Important Notes</h3>
+            <ul className="space-y-2 text-blue-200 text-xs sm:text-sm">
+              <li className="flex items-start">
+                <span className="text-green-400 mr-2 mt-0.5">✓</span>
+                Send only <span className="text-white font-bold">USDT on TRC20</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-green-400 mr-2 mt-0.5">✓</span>
+                Minimum: <span className="text-white font-bold ml-1">30 USDT</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-green-400 mr-2 mt-0.5">✓</span>
+                Double-check address before sending
+              </li>
+            </ul>
           </div>
         </div>
       </div>

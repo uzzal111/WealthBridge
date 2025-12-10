@@ -1,310 +1,354 @@
 'use client';
 
-import { useState } from 'react';
-import { FiArrowLeft, FiCopy, FiCheck, FiMail, FiAlertCircle, FiInfo } from 'react-icons/fi';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { 
+  FiDollarSign, 
+  FiCopy, 
+  FiCheck,
+  FiMail,
+  FiLock,
+  FiRefreshCw
+} from 'react-icons/fi';
+import { MdTimer } from 'react-icons/md';
 
 export default function WithdrawPage() {
-  const [amount, setAmount] = useState<string>('');
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [network, setNetwork] = useState<'TRC20' | 'BEP20'>('TRC20');
-  const [otp, setOtp] = useState<string>('');
-  const [step, setStep] = useState<'form' | 'verify'>('form');
-  const [copied, setCopied] = useState(false);
-
-  const minWithdraw = 30;
-  const fee = 5; // $1 withdrawal fee
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!amount || parseFloat(amount) < minWithdraw) {
-      alert(`Minimum withdrawal amount is $${minWithdraw}`);
-      return;
-    }
-    if (!walletAddress) {
-      alert('Please enter your wallet address');
-      return;
-    }
-    setStep('verify');
+  const [withdrawAmount, setWithdrawAmount] = useState<string>('30');
+  const [trc20Address, setTrc20Address] = useState<string>('');
+  const [verificationCode, setVerificationCode] = useState<string>('');
+  const [availableBalance] = useState<number>(8450.75);
+  const [processing, setProcessing] = useState<boolean>(false);
+  const [codeSent, setCodeSent] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<number>(0);
+  
+  // Calculate fees
+  const calculateFees = () => {
+    const amount = parseFloat(withdrawAmount) || 0;
+    const withdrawalFee = amount * 0.07;
+    const netAmount = amount - withdrawalFee;
+    return { withdrawalFee, netAmount };
   };
 
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!otp) {
-      alert('Please enter OTP');
+  const { withdrawalFee, netAmount } = calculateFees();
+
+  // Handle amount input
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '' || (/^\d+$/.test(value) && parseInt(value) >= 1)) {
+      setWithdrawAmount(value);
+    }
+  };
+
+  // Send verification code
+  const sendVerificationCode = () => {
+    if (!trc20Address) {
+      alert('Enter TRC20 address first');
       return;
     }
-    alert(`Withdrawal request confirmed! $${amount} to ${walletAddress} (${network})`);
-    setAmount('');
-    setWalletAddress('');
-    setOtp('');
-    setStep('form');
+
+    setCodeSent(true);
+    setCountdown(60);
+    alert('Code sent to email');
   };
+
+  // Handle countdown
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (countdown > 0) {
+      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+    }
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
+  // Handle withdraw
+  const handleWithdraw = () => {
+    if (!withdrawAmount || parseFloat(withdrawAmount) < 30) {
+      alert('Min: 30 USDT');
+      return;
+    }
+
+    if (!trc20Address) {
+      alert('Enter TRC20 address');
+      return;
+    }
+
+    if (!verificationCode) {
+      alert('Enter verification code');
+      return;
+    }
+
+    if (parseFloat(withdrawAmount) > availableBalance) {
+      alert('Insufficient balance');
+      return;
+    }
+
+    setProcessing(true);
+
+    setTimeout(() => {
+      setProcessing(false);
+      alert(`Withdrawal: ${withdrawAmount} USDT\nNet: ${netAmount.toFixed(2)} USDT`);
+      setWithdrawAmount('30');
+      setVerificationCode('');
+    }, 2000);
+  };
+
+  // Quick amounts
+  const quickAmounts = [30, 50, 100, 200, 500];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-indigo-50 p-4 md:p-8 flex items-center justify-center">
-      <motion.div 
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-white/20 backdrop-blur-sm">
-          {/* Card Header */}
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-6 text-white relative">
-            <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-[url('/pattern.svg')] bg-cover"></div>
-            <div className="relative z-10">
-              <div className="flex items-center justify-between">
-                <Link href="/asset" className="flex items-center text-white/90 hover:text-white transition group">
-                  <FiArrowLeft className="mr-2 group-hover:-translate-x-1 transition-transform" />
-                  <span className="text-sm">Back</span>
-                </Link>
-                <h1 className="text-2xl font-bold bg-white/10 px-4 py-1 rounded-full">Withdraw USDT</h1>
-                <div className="w-6"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 py-4 px-3 sm:py-8 sm:px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">Withdraw USDT</h1>
+          <p className="text-blue-300 mt-1 text-xs sm:text-sm">Withdraw to TRC20 wallet</p>
+        </div>
+
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 md:gap-8">
+          {/* Left Column */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Balance Card */}
+            <div className="bg-gradient-to-br from-green-900/30 to-green-800/30 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-green-700/50">
+              <div className="text-center">
+                <h2 className="text-base sm:text-lg font-bold text-white mb-2">Available Balance</h2>
+                <div className="flex items-center justify-center">
+                  <FiDollarSign className="text-green-400 text-2xl sm:text-3xl mr-2" />
+                  <div>
+                    <p className="text-green-300 text-xs sm:text-sm">Balance</p>
+                    <p className="text-2xl sm:text-4xl md:text-5xl font-bold text-white">${availableBalance.toFixed(2)}</p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-4 flex items-center justify-between">
-                <span className="bg-white/20 px-3 py-1 rounded-full text-sm backdrop-blur-sm">
-                  Min: {minWithdraw}$
-                </span>
-                <span className="text-sm bg-white/10 px-3 py-1 rounded-full">
-                  Fee: {fee}%
-                </span>
+            </div>
+
+            {/* Amount Section */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700">
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center">
+                <FiDollarSign className="mr-2 text-green-400 w-4 h-4 sm:w-5 sm:h-5" />
+                Amount
+              </h2>
+
+              {/* Amount Input */}
+              <div className="mb-4">
+                <label className="block text-slate-300 text-xs sm:text-sm font-medium mb-2">
+                  Amount (Min: 30 USDT)
+                </label>
+                <div className="relative">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-400 font-bold text-lg">
+                    $
+                  </div>
+                  <input
+                    type="text"
+                    value={withdrawAmount}
+                    onChange={handleAmountChange}
+                    className="w-full pl-10 pr-10 sm:pl-12 sm:pr-12 py-3 bg-slate-800 border-2 border-slate-700 rounded-lg sm:rounded-xl text-white text-xl sm:text-2xl font-bold focus:outline-none focus:border-green-500 transition-colors text-center"
+                    placeholder="30"
+                  />
+                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 font-semibold text-sm">
+                    USDT
+                  </div>
+                </div>
+                
+                {/* Quick Amounts */}
+                <div className="mt-3">
+                  <p className="text-slate-400 text-xs mb-2">Quick:</p>
+                  <div className="grid grid-cols-5 gap-1 sm:gap-2">
+                    {quickAmounts.map((amount) => (
+                      <button
+                        key={amount}
+                        onClick={() => setWithdrawAmount(amount.toString())}
+                        className={`py-2 sm:py-3 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-300 ${
+                          withdrawAmount === amount.toString()
+                            ? 'bg-gradient-to-r from-green-600 to-green-700 text-white'
+                            : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                        }`}
+                      >
+                        ${amount}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Fee Summary */}
+              <div className="bg-blue-900/30 rounded-lg sm:rounded-xl p-3 sm:p-4 border border-blue-700/50">
+                <h4 className="text-white font-semibold text-sm sm:text-base mb-2">
+                  Summary
+                </h4>
+                <div className="space-y-1 text-xs sm:text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-blue-300">Amount:</span>
+                    <span className="text-white font-bold">${parseFloat(withdrawAmount) || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-blue-300">Fee (7%):</span>
+                    <span className="text-red-400 font-bold">-${withdrawalFee.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between pt-2 border-t border-blue-700/50">
+                    <span className="text-green-300 font-semibold">You get:</span>
+                    <span className="text-green-400 font-bold text-sm sm:text-base">${netAmount.toFixed(2)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Card Content */}
-          <div className="p-6">
-            {step === 'form' ? (
-              <motion.form 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                onSubmit={handleSubmit} 
-                className="space-y-6"
-              >
-                {/* Amount Input */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount to Withdraw (USDT)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                    <input
-                      type="number"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                      placeholder={`${minWithdraw} or more`}
-                      className="w-full pl-10 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50 transition"
-                      step="0.01"
-                      min={minWithdraw}
-                    />
-                  </div>
-                  {amount && parseFloat(amount) < minWithdraw && (
-                    <motion.p 
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="text-red-500 text-xs mt-1 flex items-center"
-                    >
-                      <FiAlertCircle className="mr-1" />
-                      Minimum withdrawal is ${minWithdraw}
-                    </motion.p>
-                  )}
-                </div>
+          {/* Right Column */}
+          <div className="space-y-4 sm:space-y-6">
+            {/* Address & Verification */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-700">
+              <h2 className="text-lg sm:text-xl font-bold text-white mb-4 flex items-center">
+                <FiCopy className="mr-2 text-blue-400 w-4 h-4 sm:w-5 sm:h-5" />
+                TRC20 Address
+              </h2>
 
-                {/* Network Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Select Network
-                  </label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="button"
-                      onClick={() => setNetwork('TRC20')}
-                      className={`p-3 rounded-xl border ${
-                        network === 'TRC20'
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md'
-                          : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
-                      } transition`}
-                    >
-                      TRC20
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.03 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="button"
-                      onClick={() => setNetwork('BEP20')}
-                      className={`p-3 rounded-xl border ${
-                        network === 'BEP20'
-                          ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md'
-                          : 'border-gray-200 bg-gray-50 text-gray-700 hover:border-gray-300'
-                      } transition`}
-                    >
-                      BEP20
-                    </motion.button>
-                  </div>
-                </div>
-
-                {/* Wallet Address */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {network} Wallet Address
-                  </label>
+              {/* Address Input */}
+              <div className="mb-4">
+                <label className="block text-slate-300 text-xs sm:text-sm font-medium mb-2">
+                  Your TRC20 Address
+                </label>
+                <div className="relative">
                   <input
                     type="text"
-                    value={walletAddress}
-                    onChange={(e) => setWalletAddress(e.target.value)}
-                    placeholder={`Paste ${network} address`}
-                    className="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono bg-gray-50/50 transition"
-                    required
+                    value={trc20Address}
+                    onChange={(e) => setTrc20Address(e.target.value)}
+                    placeholder="Enter TRC20 address"
+                    className="w-full pl-10 sm:pl-12 pr-4 py-3 bg-slate-800 border-2 border-slate-700 rounded-lg sm:rounded-xl text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   />
+                  <FiCopy className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 w-4 h-4" />
                 </div>
+              </div>
 
-                {/* Submit Button */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  disabled={!amount || !walletAddress || parseFloat(amount) < minWithdraw}
-                  className={`w-full py-4 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg ${
-                    (!amount || !walletAddress || parseFloat(amount) < minWithdraw)
-                      ? 'opacity-50 cursor-not-allowed'
-                      : 'hover:shadow-indigo-500/20'
-                  }`}
-                >
-                  Request Withdrawal
-                </motion.button>
-              </motion.form>
-            ) : (
-              /* OTP Verification Step */
-              <motion.form 
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                onSubmit={handleVerify} 
-                className="space-y-6"
-              >
-                <div className="text-center">
-                  <motion.div 
-                    animate={{ 
-                      rotate: [0, 10, -10, 0],
-                      scale: [1, 1.05, 1]
-                    }}
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="mx-auto w-20 h-20 bg-indigo-100 rounded-2xl flex items-center justify-center mb-4 shadow-inner"
+              {/* Verification */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-base sm:text-lg font-bold text-white flex items-center">
+                    <FiMail className="mr-2 text-yellow-400 w-4 h-4" />
+                    Verification
+                  </h3>
+                  <button
+                    onClick={sendVerificationCode}
+                    disabled={!trc20Address || codeSent}
+                    className={`px-3 py-1.5 rounded-lg font-semibold text-xs sm:text-sm transition-all duration-300 flex items-center ${
+                      !trc20Address || codeSent
+                        ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                        : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800'
+                    }`}
                   >
-                    <FiMail className="text-indigo-600 text-3xl" />
-                  </motion.div>
-                  <h2 className="text-2xl font-bold text-gray-800 mb-2">Verify Withdrawal</h2>
-                  <p className="text-gray-600 mb-5">
-                    We've sent a 6-digit OTP to your email
-                  </p>
+                    {codeSent ? (
+                      <>
+                        <FiRefreshCw className={`mr-1 ${countdown > 0 ? 'animate-spin' : ''} w-3 h-3`} />
+                        {countdown > 0 ? `${countdown}s` : 'Resend'}
+                      </>
+                    ) : (
+                      'Send Code'
+                    )}
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    OTP Code
+                {/* Code Input */}
+                <div className="mb-4">
+                  <label className="block text-slate-300 text-xs sm:text-sm font-medium mb-2">
+                    6-digit Code
                   </label>
-                  <div className="flex space-x-3">
-                    {[...Array(6)].map((_, i) => (
-                      <motion.input
-                        key={i}
-                        type="text"
-                        maxLength={1}
-                        value={otp[i] || ''}
-                        onChange={(e) => {
-                          const newOtp = otp.split('');
-                          newOtp[i] = e.target.value;
-                          setOtp(newOtp.join('').slice(0, 6));
-                        }}
-                        className="w-full h-14 text-center text-2xl font-bold border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50/50"
-                        required
-                        whileFocus={{ scale: 1.05 }}
-                      />
-                    ))}
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="Enter code"
+                      className="w-full pl-10 sm:pl-12 pr-4 py-3 bg-slate-800 border-2 border-slate-700 rounded-lg sm:rounded-xl text-white text-center text-lg sm:text-xl font-bold tracking-widest focus:outline-none focus:border-yellow-500 transition-colors"
+                      maxLength={6}
+                    />
+                    <FiLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-400 w-4 h-4" />
                   </div>
                 </div>
 
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className="w-full py-4 rounded-xl font-medium text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-indigo-500/20"
-                >
-                  Confirm Withdrawal
-                </motion.button>
-
+                {/* Withdraw Button */}
                 <button
-                  type="button"
-                  onClick={() => setStep('form')}
-                  className="w-full py-3 rounded-lg font-medium text-gray-600 hover:text-indigo-700 transition flex items-center justify-center"
+                  onClick={handleWithdraw}
+                  disabled={processing || !verificationCode || !trc20Address || parseFloat(withdrawAmount) < 30}
+                  className={`w-full py-3 rounded-lg sm:rounded-xl font-bold text-sm sm:text-base transition-all duration-300 flex items-center justify-center ${
+                    processing || !verificationCode || !trc20Address || parseFloat(withdrawAmount) < 30
+                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800'
+                  }`}
                 >
-                  <FiArrowLeft className="mr-2" />
-                  Back to Form
+                  {processing ? (
+                    <>
+                      <FiRefreshCw className="animate-spin mr-2 w-4 h-4" />
+                      Processing...
+                    </>
+                  ) : (
+                    `Withdraw $${netAmount.toFixed(2)}`
+                  )}
                 </button>
-              </motion.form>
-            )}
 
-            {/* Important Notes - Enhanced Version */}
-<motion.div 
-  initial={{ opacity: 0, y: 20 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ delay: 0.4 }}
-  className="mt-8 bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
->
-  <div className="bg-gradient-to-r from-indigo-50 to-purple-50 px-5 py-3 border-b border-gray-200 flex items-center">
-    <FiInfo className="text-indigo-600 mr-2" />
-    <h4 className="text-sm font-semibold text-indigo-800">Withdrawal Guidelines</h4>
-  </div>
-  <div className="p-4 space-y-3">
-    <div className="flex items-start">
-      <div className="flex-shrink-0 h-5 w-5 rounded-full bg-indigo-100 flex items-center justify-center mr-3 mt-0.5">
-        <span className="text-indigo-600 text-xs font-bold">1</span>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-800">Minimum Withdrawal</p>
-        <p className="text-xs text-gray-600">${minWithdraw} USDT required for all withdrawals</p>
-      </div>
-    </div>
-    
-    <div className="flex items-start">
-      <div className="flex-shrink-0 h-5 w-5 rounded-full bg-purple-100 flex items-center justify-center mr-3 mt-0.5">
-        <span className="text-purple-600 text-xs font-bold">2</span>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-800">Network Fees</p>
-        <p className="text-xs text-gray-600">${fee} flat fee applies to all {network} transactions</p>
-      </div>
-    </div>
-    
-    <div className="flex items-start">
-      <div className="flex-shrink-0 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center mr-3 mt-0.5">
-        <span className="text-blue-600 text-xs font-bold">3</span>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-800">Processing Time</p>
-        <p className="text-xs text-gray-600">Typically completes within 5-30 minutes</p>
-      </div>
-    </div>
-    
-    <div className="flex items-start">
-      <div className="flex-shrink-0 h-5 w-5 rounded-full bg-amber-100 flex items-center justify-center mr-3 mt-0.5">
-        <span className="text-amber-600 text-xs font-bold">!</span>
-      </div>
-      <div>
-        <p className="text-sm font-medium text-gray-800">Address Verification</p>
-        <p className="text-xs text-gray-600">
-          Ensure your {network} address is correct. Transactions cannot be reversed.
-        </p>
-      </div>
-    </div>
-  </div>
-</motion.div>
+                <p className="text-center text-slate-400 text-xs mt-2">
+                  You get: ${netAmount.toFixed(2)} USDT
+                </p>
+              </div>
+            </div>
+
+            {/* Info Box */}
+            <div className="bg-gradient-to-br from-yellow-900/20 to-yellow-800/20 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-yellow-700/30">
+              <h3 className="text-base sm:text-lg font-bold text-white mb-3 flex items-center">
+                <MdTimer className="mr-2 text-yellow-400 w-4 h-4 sm:w-5 sm:h-5" />
+                Info
+              </h3>
+              
+              <div className="space-y-2 text-xs sm:text-sm">
+                <div className="flex items-start">
+                  <div className="text-green-400 mr-2 mt-0.5">✓</div>
+                  <div>
+                    <p className="text-white font-semibold">Min: 30 USDT</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="text-red-400 mr-2 mt-0.5">⚠</div>
+                  <div>
+                    <p className="text-white font-semibold">Fee: 7%</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="text-blue-400 mr-2 mt-0.5">⏰</div>
+                  <div>
+                    <p className="text-white font-semibold">Time: 0-24h</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start">
+                  <div className="text-purple-400 mr-2 mt-0.5">🔗</div>
+                  <div>
+                    <p className="text-white font-semibold">Network: TRC20</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div className="pt-3 mt-3 border-t border-yellow-700/30">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-300 text-xs">Status:</span>
+                  <span className="px-2 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-semibold">
+                    Active 24/7
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </motion.div>
+
+        {/* Bottom Info */}
+        <div className="mt-6 text-center">
+          <div className="inline-flex items-center bg-slate-800/50 px-4 py-2 rounded-lg border border-slate-700">
+            <p className="text-slate-400 text-xs">
+              Funds sent within 24 hours
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
