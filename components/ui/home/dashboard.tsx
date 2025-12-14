@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
-export default function AuthHomePage() {
+export default function AuthHomePage(){
   const [time, setTime] = useState(new Date());
   const [greeting, setGreeting] = useState('');
   
