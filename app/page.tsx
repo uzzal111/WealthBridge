@@ -1,5 +1,5 @@
 import HomeLayout from './(home)/layout';
-import BannerSlider from '@/components/ui/home/BannerSlider';
+import BannerSlider from '@/components/ui/home/dashboard';
 import UserCountdown from '@/components/ui/home/UserGrowth';
 import Testimonials from '@/components/ui/home/Testimonials';
 import Benefits from '@/components/ui/home/Benefits';

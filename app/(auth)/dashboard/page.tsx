@@ -1,6 +1,6 @@
 import React from 'react';
 import CompanyOffersTicker from '@/components/ui/home/welcomenotice';
-import BannerSlider from '@/components/ui/home/BannerSlider';
+import BannerSlider from '@/components/ui/home/dashboard';
 import Navigation from '@/components/ui/auth/navigation';
 import TaskRecordComponent from '@/components/ui/home/taskrecord';
 import Partners from '@/components/ui/home/Partners';

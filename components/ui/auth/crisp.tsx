@@ -1,65 +1,35 @@
-// components/CrispChat.tsx
-'use client';
+import Script from "next/script";
 
-import { useEffect } from 'react';
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body>
+        {children}
 
-const CrispChat = () => {
-  useEffect(() => {
-    // Initialize Crisp
-    window.$crisp = [];
-    window.CRISP_WEBSITE_ID = "05caebaf-e6b0-41b4-97e8-ed0b3adc712b"; // Replace with your ID
-
-    // Create and inject custom CSS
-    const style = document.createElement('style');
-    style.innerHTML = `
-      #crisp-chatbox {
-        bottom: auto !important;
-        top: 20px !important;
-        right: 20px !important;
-        width: 50px !important;
-        height: 50px !important;
-        border-radius: 50% !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
-      }
-      #crisp-chatbox svg {
-        width: 24px !important;
-        height: 24px !important;
-      }
-      @media (max-width: 768px) {
-        #crisp-chatbox {
-          top: 15px !important;
-          right: 15px !important;
-          width: 45px !important;
-          height: 45px !important;
-        }
-      }
-    `;
-    document.head.appendChild(style);
-
-    // Load Crisp script
-    const script = document.createElement('script');
-    script.src = 'https://client.crisp.chat/l.js';
-    script.async = true;
-    document.head.appendChild(script);
-
-    // Cleanup function
-    return () => {
-      // Remove Crisp script
-      const crispScript = document.querySelector('script[src="https://client.crisp.chat/l.js"]');
-      if (crispScript) crispScript.remove();
-
-      // Remove custom style
-      const styles = document.querySelectorAll('style');
-      styles.forEach((styleTag) => {
-        if (styleTag.innerHTML.includes('crisp-chatbox')) {
-          styleTag.remove();
-        }
-      });
-
-    };
-  }, []);
-
-  return null;
-};
-
-export default CrispChat;
+        {/* Olark Live Chat */}
+        <Script
+          id="olark-chat"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(o,l,a,r,k,y){if(o.olark)return;
+              r="script";y=l.createElement(r);r=l.getElementsByTagName(r)[0];
+              y.async=1;y.src="//"+a;r.parentNode.insertBefore(y,r);
+              y=o.olark=function(){k.s.push(arguments);k.t.push(+new Date)};
+              y.extend=function(i,j){y("extend",i,j)};
+              y.identify=function(i){y("identify",k.i=i)};
+              y.configure=function(i,j){y("configure",i,j);k.c[i]=j};
+              k=y._={s:[],t:[+new Date],c:{},l:a};
+              })(window,document,"static.olark.com/jsclient/loader.js");
+              olark.identify('8327-497-10-5076');
+            `,
+          }}
+        />
+      </body>
+    </html>
+  );
+}
