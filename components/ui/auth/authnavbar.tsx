@@ -31,7 +31,7 @@ export default function Navbar() {
         { name: "Withdraw", icon: <FiCreditCard />, path: "/withdraw" },
         { name: "Order History", icon: <FiList />, path: "/order" },
         { name: "Transaction History", icon: <FiClock />, path: "/transactions" },
-        { name: "My Reward Point", icon: <FiAward />, path: "/rewards" }
+        { name: "My Invite Point", icon: <FiAward />, path: "/invite" }
       ]
     },
     {
