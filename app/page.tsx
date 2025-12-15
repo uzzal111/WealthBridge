@@ -14,8 +14,9 @@ export default function Home() {
 	return (
 		<HomeLayout>
 			<CompanyOffersTicker></CompanyOffersTicker>
+		
+		
 			
-			<Crisp></Crisp>
 			
 		</HomeLayout>
 	);
