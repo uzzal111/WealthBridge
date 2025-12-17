@@ -1,7 +1,5 @@
 import React from 'react';
 import HomeNavbar from '@/components/ui/home/Navbar';
-import HomeFotter from '@/components/ui/home/Fotter';
-import MobileFooterNav from '@/components/ui/auth/foternavbar';
 const HomeLayout = ({
 	children,
 }: Readonly<{
