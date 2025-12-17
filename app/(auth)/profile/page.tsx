@@ -7,13 +7,24 @@ import {
   FiDollarSign, 
   FiCalendar, 
   FiShield,
-  FiTrendingUp
+  FiTrendingUp,
+  FiLock,
+  FiKey,
+  FiSettings,
+  FiEye,
+  FiEyeOff,
+  FiBell,
+  FiGlobe,
+  FiCreditCard,
+  FiShield as FiShield2
 } from 'react-icons/fi';
 import { 
   MdVerified, 
   MdWorkspacePremium,
   MdPhone,
-  MdLocationOn
+  MdLocationOn,
+  MdSecurity,
+  MdPassword
 } from 'react-icons/md';
 
 interface UserProfile {
@@ -65,14 +76,94 @@ export default function UserProfilePage() {
     availableBalance: 8450.75
   });
 
+  // Password change state
+  const [showPassword, setShowPassword] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  // Settings state
+  const [settings, setSettings] = useState({
+    emailNotifications: true,
+    smsNotifications: false,
+    twoFactorAuth: true,
+    autoWithdrawal: false,
+    darkMode: true,
+    currency: 'USD'
+  });
+
+  // Handle password change
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const submitPasswordChange = () => {
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      alert('New passwords do not match!');
+      return;
+    }
+    if (passwordData.newPassword.length < 8) {
+      alert('Password must be at least 8 characters long!');
+      return;
+    }
+    
+    setIsChangingPassword(true);
+    // Simulate API call
+    setTimeout(() => {
+      alert('Password changed successfully!');
+      setIsChangingPassword(false);
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+    }, 1500);
+  };
+
+  // Toggle password visibility
+  const togglePasswordVisibility = (field: keyof typeof showPassword) => {
+    setShowPassword(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
+  };
+
+  // Handle settings toggle
+  const toggleSetting = (setting: keyof typeof settings) => {
+    setSettings(prev => ({
+      ...prev,
+      [setting]: !prev[setting]
+    }));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-900 py-4 px-3 sm:py-8 sm:px-4">
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white flex items-center">
+            <FiUser className="mr-3 text-blue-400" />
+            My Profile
+          </h1>
+          <p className="text-slate-400 text-sm sm:text-base mt-2">Manage your account settings and security</p>
+        </div>
+
         {/* Main Content Grid - Responsive */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6 md:gap-8">
           {/* Left Column - Profile */}
-          <div className="space-y-5 sm:space-y-6 md:space-y-8">
-            {/* Profile Card - Mobile Optimized - CENTERED PROFILE */}
+          <div className="lg:col-span-2 space-y-5 sm:space-y-6 md:space-y-8">
+            {/* Profile Card - Mobile Optimized */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-5 sm:p-6 md:p-8 border border-slate-700">
               {/* CENTERED PROFILE PICTURE SECTION */}
               <div className="flex flex-col items-center mb-5 sm:mb-6">
@@ -181,51 +272,189 @@ export default function UserProfilePage() {
             </div>
           </div>
 
-          {/* Right Column - Earnings Summary */}
+          {/* Right Column - Settings & Security */}
           <div className="space-y-5 sm:space-y-6 md:space-y-8">
-            {/* Total Earnings Summary - Mobile Optimized */}
+            {/* Settings Card */}
             <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-5 sm:p-6 md:p-8 border border-slate-700">
-              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6">
-                Earnings Summary
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 flex items-center">
+                <FiSettings className="mr-2.5 text-blue-400" />
+                Account Settings
               </h3>
               
-              <div className="text-center mb-4 sm:mb-6">
-                <p className="text-slate-400 text-xs sm:text-sm">Total Lifetime Earnings</p>
-                <p className="text-2xl sm:text-3xl md:text-4xl font-bold text-green-400">${incomeData.totalEarnings.toLocaleString()}</p>
+              <div className="space-y-4 sm:space-y-5">
+                {/* Notification Settings */}
+                <div className="space-y-3">
+                  <h4 className="text-slate-300 font-semibold text-sm sm:text-base flex items-center">
+                    <FiBell className="mr-2" />
+                    Notifications
+                  </h4>
+                  
+                  <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
+                    <div>
+                      <p className="text-white text-sm sm:text-base">Email Notifications</p>
+                      <p className="text-slate-400 text-xs">Receive updates via email</p>
+                    </div>
+                    <button 
+                      onClick={() => toggleSetting('emailNotifications')}
+                      className={`w-12 h-6 rounded-full transition-colors ${settings.emailNotifications ? 'bg-green-500' : 'bg-slate-600'}`}
+                    >
+                      <div className={`w-5 h-5 rounded-full bg-white transform transition-transform ${settings.emailNotifications ? 'translate-x-7' : 'translate-x-1'} mt-0.5`} />
+                    </button>
+                  </div>
+                  
+                  <div className="flex justify-between items-center p-3 bg-slate-800/30 rounded-lg">
+                    <div>
+                      <p className="text-white text-sm sm:text-base">SMS Notifications</p>
+                      <p className="text-slate-400 text-xs">Receive SMS alerts</p>
+                    </div>
+                    <button 
+                      onClick={() => toggleSetting('smsNotifications')}
+                      className={`w-12 h-6 rounded-full transition-colors ${settings.smsNotifications ? 'bg-green-500' : 'bg-slate-600'}`}
+                    >
+                      <div className={`w-5 h-5 rounded-full bg-white transform transition-transform ${settings.smsNotifications ? 'translate-x-7' : 'translate-x-1'} mt-0.5`} />
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Display Settings */}
+                <div className="space-y-3">
+                  
+                  <div className="p-3 bg-slate-800/30 rounded-lg">
+                    <p className="text-white text-sm sm:text-base mb-2">Currency</p>
+                    <select 
+                      value={settings.currency}
+                      onChange={(e) => setSettings(prev => ({ ...prev, currency: e.target.value }))}
+                      className="w-full bg-slate-700 text-white rounded-lg p-2 text-sm"
+                    >
+                      <option value="USD">USDT - US Dollar</option>
+                      <option value="EUR">EUR - Euro</option>
+                      <option value="GBP">GBP - British Pound</option>
+                      <option value="CAD">CAD - Canadian Dollar</option>
+                      <option value="AUD">AUD - Australian Dollar</option>
+                    </select>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            {/* Change Password Card */}
+            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl sm:rounded-2xl shadow-xl sm:shadow-2xl p-5 sm:p-6 md:p-8 border border-slate-700">
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 flex items-center">
+                <MdPassword className="mr-2.5 text-red-400" />
+                Change Password
+              </h3>
               
-              {/* Earnings Breakdown - Mobile Optimized */}
-              <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6">
-                <div className="flex justify-between items-center p-3 sm:p-4 bg-slate-800/30 rounded-lg sm:rounded-xl">
-                  <span className="text-slate-300 text-sm sm:text-base">Commission</span>
-                  <span className="text-white font-bold text-sm sm:text-base">$48,500</span>
+              <div className="space-y-4">
+                {/* Current Password */}
+                <div>
+                  <label className="block text-slate-300 text-sm sm:text-base mb-2">Current Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword.current ? "text" : "password"}
+                      name="currentPassword"
+                      value={passwordData.currentPassword}
+                      onChange={handlePasswordChange}
+                      placeholder="Enter current password"
+                      className="w-full bg-slate-700 text-white rounded-lg p-3 pr-10 text-sm sm:text-base"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('current')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      {showPassword.current ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 sm:p-4 bg-slate-800/30 rounded-lg sm:rounded-xl">
-                  <span className="text-slate-300 text-sm sm:text-base">Investment</span>
-                  <span className="text-green-400 font-bold text-sm sm:text-base">$32,750</span>
+                {/* New Password */}
+                <div>
+                  <label className="block text-slate-300 text-sm sm:text-base mb-2">New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword.new ? "text" : "password"}
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      placeholder="Enter new password"
+                      className="w-full bg-slate-700 text-white rounded-lg p-3 pr-10 text-sm sm:text-base"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('new')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      {showPassword.new ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">Minimum 8 characters with uppercase, lowercase & number</p>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 sm:p-4 bg-slate-800/30 rounded-lg sm:rounded-xl">
-                  <span className="text-slate-300 text-sm sm:text-base">Bonus</span>
-                  <span className="text-yellow-400 font-bold text-sm sm:text-base">$18,250</span>
+                {/* Confirm Password */}
+                <div>
+                  <label className="block text-slate-300 text-sm sm:text-base mb-2">Confirm New Password</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword.confirm ? "text" : "password"}
+                      name="confirmPassword"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      placeholder="Confirm new password"
+                      className="w-full bg-slate-700 text-white rounded-lg p-3 pr-10 text-sm sm:text-base"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => togglePasswordVisibility('confirm')}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white"
+                    >
+                      {showPassword.confirm ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
                 
-                <div className="flex justify-between items-center p-3 sm:p-4 bg-slate-800/30 rounded-lg sm:rounded-xl">
-                  <span className="text-slate-300 text-sm sm:text-base">Salary</span>
-                  <span className="text-blue-400 font-bold text-sm sm:text-base">$25,500</span>
+                {/* Password Requirements */}
+                <div className="bg-slate-800/50 rounded-lg p-3">
+                  <p className="text-slate-300 text-sm font-semibold mb-2">Password Requirements:</p>
+                  <ul className="text-xs text-slate-400 space-y-1">
+                    <li className="flex items-center">
+                      <div className={`w-1.5 h-1.5 rounded-full mr-2 ${passwordData.newPassword.length >= 8 ? 'bg-green-500' : 'bg-red-500'}`} />
+                      At least 8 characters
+                    </li>
+                    <li className="flex items-center">
+                      <div className={`w-1.5 h-1.5 rounded-full mr-2 ${/[A-Z]/.test(passwordData.newPassword) ? 'bg-green-500' : 'bg-red-500'}`} />
+                      One uppercase letter
+                    </li>
+                    <li className="flex items-center">
+                      <div className={`w-1.5 h-1.5 rounded-full mr-2 ${/[a-z]/.test(passwordData.newPassword) ? 'bg-green-500' : 'bg-red-500'}`} />
+                      One lowercase letter
+                    </li>
+                    <li className="flex items-center">
+                      <div className={`w-1.5 h-1.5 rounded-full mr-2 ${/[0-9]/.test(passwordData.newPassword) ? 'bg-green-500' : 'bg-red-500'}`} />
+                      One number
+                    </li>
+                  </ul>
                 </div>
-              </div>
-              
-              {/* Withdraw Section - Mobile Optimized */}
-              <div className="pt-4 sm:pt-6 border-t border-slate-700">
-                <div className="flex justify-between items-center mb-3 sm:mb-4">
-                  <span className="text-white font-semibold text-sm sm:text-base">Available Balance</span>
-                  <span className="text-xl sm:text-2xl font-bold text-white">${incomeData.availableBalance.toLocaleString()}</span>
-                </div>
-                <button className="w-full py-2.5 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg sm:rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300">
-                  Withdraw Funds
+                
+                {/* Submit Button */}
+                <button
+                  onClick={submitPasswordChange}
+                  disabled={isChangingPassword}
+                  className={`w-full py-3 text-sm sm:text-base font-semibold rounded-lg transition-all ${
+                    isChangingPassword 
+                      ? 'bg-slate-600 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800'
+                  } text-white`}
+                >
+                  {isChangingPassword ? 'Changing Password...' : 'Change Password'}
                 </button>
+                
+                {/* Security Tips */}
+                <div className="text-center">
+                  <p className="text-xs text-slate-400">
+                    <FiShield2 className="inline mr-1" />
+                    For security reasons, password changes require re-login
+                  </p>
+                </div>
               </div>
             </div>
           </div>

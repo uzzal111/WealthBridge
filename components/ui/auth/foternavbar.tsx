@@ -26,7 +26,7 @@ export default function MobileFooterNav() {
       icon: <FaHome size={20} />, 
       activeIcon: <FaHome size={22} />,
       label: "Home", 
-      path: "/",
+      path: "/dashboard",
       activeColor: "text-amber-400",
       inactiveColor: "text-slate-400",
       bgActive: "bg-gradient-to-br from-amber-900/30 to-orange-900/20",

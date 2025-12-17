@@ -29,27 +29,18 @@ export default function Navbar() {
       items: [
         { name: "Deposit", icon: <FiDownload />, path: "/deposit" },
         { name: "Withdraw", icon: <FiCreditCard />, path: "/withdraw" },
-        { name: "Order History", icon: <FiList />, path: "/order" },
-        { name: "Transaction History", icon: <FiClock />, path: "/transactions" },
-        { name: "My Invite Point", icon: <FiAward />, path: "/invite" }
+        { name: "Order History", icon: <FiList />, path: "/order-histry" },
+        { name: "Transaction History", icon: <FiClock />, path: "/transaction" },
+        { name: "Active Bunus Point", icon: <FiAward />, path: "/active-bunus" }
       ]
     },
-    {
-      title: "E-Commerce",
-      items: [
-        { name: "Products", icon: <FiShoppingBag />, path: "/products" },
-        { name: "Orders", icon: <FiShoppingCart />, path: "/orders" },
-        { name: "Discounts", icon: <FiTag />, path: "/discounts" },
-        { name: "Shipping", icon: <FiTruck />, path: "/shipping" }
-      ]
-    },
+   
     {
       title: "Account",
       items: [
-        { name: "Home", icon: <FiHome />, path: "/" },
+        { name: "Home", icon: <FiHome />, path: "/dashboard" },
         { name: "Team", icon: <FiUsers />, path: "/team" },
-        { name: "Online", icon: <FiGlobe />, path: "/online" },
-        { name: "Benefit Program", icon: <FiGift />, path: "/benefits" },
+        { name: "Benefit Program", icon: <FiGift />, path: "/benefit" },
         { name: "Profile", icon: <FiUser />, path: "/profile" }
       ]
     }

@@ -1,593 +1,1015 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState } from "react";
 import { 
   FiUsers, 
+  FiShare2, 
+  FiCopy, 
+  FiCheck, 
   FiDollarSign, 
-  FiAward, 
-  FiCalendar, 
-  FiTrendingUp,
-  FiUserCheck,
+  FiTrendingUp, 
+  FiDownload, 
+  FiUser,
+  FiPhone,
+  FiActivity,
+  FiArrowUp,
+  FiArrowDown,
   FiStar,
-  FiPackage,
-  FiMessageCircle,
-  FiCheckCircle,
-  FiPercent
-} from 'react-icons/fi';
+  FiAward,
+  FiLink,
+  FiFacebook,
+  FiTwitter,
+  FiMessageSquare,
+  FiMail,
+  FiChevronDown,
+  FiChevronUp,
+  FiPlus,
+  FiMinus,
+  FiSmartphone,
+  FiGlobe,
+  FiBarChart2,
+  FiCreditCard,
+  FiCalendar,
+  FiHelpCircle,
+  FiZap,
+  FiTarget,
+  FiBell
+} from "react-icons/fi";
+import { 
+  FaWhatsapp, 
+  FaTelegram, 
+  FaUserCircle,
+  FaChartLine,
+  FaLevelUpAlt,
+  FaLevelDownAlt,
+  FaIdBadge,
+  FaMoneyBillWave,
+  FaPercentage,
+  FaQrcode,
+  FaRegCopy,
+  FaRegShareSquare,
+  FaRegChartBar
+} from "react-icons/fa";
+import { 
+  IoLogoWhatsapp,
+  IoLogoFacebook,
+  IoLogoTwitter,
 
-interface TeamMember {
-  id: string;
-  name: string;
-  level: 1 | 2 | 3;
-  depositAmount: number;
-  isActive: boolean;
-  joinDate: string;
-  commissionEarned: number;
-  avatar: string;
-}
+  IoShareSocialSharp
+} from "react-icons/io5";
+import { motion, AnimatePresence } from "framer-motion";
 
-interface CommissionEarning {
-  level: number;
-  percentage: number;
-  fromMember: string;
-  amount: number;
-  date: string;
-}
 
-interface BonusReward {
-  id: string;
-  name: string;
-  requiredMembers: number;
-  bonusAmount: number;
-  achieved: boolean;
-  claimed: boolean;
-}
+export default function ReferralPage() {
+  const [copied, setCopied] = useState(false);
+  const [expandedLevel, setExpandedLevel] = useState<number | null>(1);
+  const [activeShareTab, setActiveShareTab] = useState<'direct' | 'social'>('direct');
+  const [showQRCode, setShowQRCode] = useState(false);
+  const [activeStatFilter, setActiveStatFilter] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
+  const [notification, setNotification] = useState<string | null>(null);
+  
+  const referralLink = "https://wealthbridge.com/ref/aj12345";
+  
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    showNotification("Link copied to clipboard!");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
-interface MonthlySalary {
-  id: string;
-  tier: string;
-  requiredActiveMembers: number;
-  requiredTotalDeposit: number;
-  salaryAmount: number;
-  eligible: boolean;
-}
+  const showNotification = (message: string) => {
+    setNotification(message);
+    setTimeout(() => setNotification(null), 3000);
+  };
 
-interface SeminarSupport {
-  id: string;
-  requirement: string;
-  description: string;
-  status: string;
-}
+  // Level wise members data
+  const levelData = [
+    {
+      level: 1,
+      commission: "10%",
+      icon: <FaLevelUpAlt className="text-green-400" />,
+      color: "from-green-900/30 to-emerald-900/20",
+      border: "border-green-700/30",
+      textColor: "text-green-400",
+      members: [
+        { id: 1, name: "John Smith", phone: "+1 555 123 4567", status: "active", deposit: 2500, withdraw: 1200, joinDate: "15 Jan", profit: 450 },
+        { id: 2, name: "Sarah Johnson", phone: "+1 555 987 6543", status: "active", deposit: 3500, withdraw: 2000, joinDate: "20 Jan", profit: 620 },
+        { id: 3, name: "Mike Williams", phone: "+1 555 456 7890", status: "inactive", deposit: 1500, withdraw: 800, joinDate: "01 Feb", profit: 230 },
+        { id: 4, name: "Emma Davis", phone: "+1 555 789 0123", status: "active", deposit: 5000, withdraw: 3000, joinDate: "10 Feb", profit: 890 },
+      ]
+    },
+    {
+      level: 2,
+      commission: "5%",
+      icon: <FaLevelUpAlt className="text-blue-400" />,
+      color: "from-blue-900/30 to-cyan-900/20",
+      border: "border-blue-700/30",
+      textColor: "text-blue-400",
+      members: [
+        { id: 5, name: "Robert Brown", phone: "+1 555 234 5678", status: "active", deposit: 2800, withdraw: 1500, joinDate: "15 Feb", profit: 510 },
+        { id: 6, name: "Lisa Wilson", phone: "+1 555 345 6789", status: "active", deposit: 4200, withdraw: 2500, joinDate: "25 Jan", profit: 680 },
+        { id: 7, name: "David Lee", phone: "+1 555 567 8901", status: "active", deposit: 3200, withdraw: 1800, joinDate: "05 Feb", profit: 520 },
+      ]
+    },
+    {
+      level: 3,
+      commission: "2%",
+      icon: <FaLevelDownAlt className="text-purple-400" />,
+      color: "from-purple-900/30 to-pink-900/20",
+      border: "border-purple-700/30",
+      textColor: "text-purple-400",
+      members: [
+        { id: 8, name: "Jennifer Taylor", phone: "+1 555 678 9012", status: "active", deposit: 3800, withdraw: 2200, joinDate: "12 Feb", profit: 610 },
+        { id: 9, name: "Michael Clark", phone: "+1 555 789 1234", status: "inactive", deposit: 2100, withdraw: 1200, joinDate: "18 Feb", profit: 320 },
+      ]
+    }
+  ];
 
-export default function TeamCommissionPage() {
-  // Team data
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([
-    { id: '1', name: 'John Smith', level: 1, depositAmount: 100, isActive: true, joinDate: '2024-01-15', commissionEarned: 20, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=center' },
-    { id: '2', name: 'Sarah Johnson', level: 1, depositAmount: 100, isActive: true, joinDate: '2024-01-16', commissionEarned: 20, avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=center' },
-    { id: '3', name: 'Mike Wilson', level: 2, depositAmount: 100, isActive: true, joinDate: '2024-01-10', commissionEarned: 15, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=center' },
-    { id: '4', name: 'Emma Davis', level: 2, depositAmount: 100, isActive: true, joinDate: '2024-01-12', commissionEarned: 15, avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop&crop=center' },
-    { id: '5', name: 'David Brown', level: 3, depositAmount: 100, isActive: true, joinDate: '2024-01-05', commissionEarned: 10, avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop&crop=center' },
-    { id: '6', name: 'Lisa Miller', level: 3, depositAmount: 100, isActive: true, joinDate: '2024-01-08', commissionEarned: 10, avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop&crop=center' },
-    { id: '7', name: 'Robert Taylor', level: 1, depositAmount: 100, isActive: true, joinDate: '2024-01-20', commissionEarned: 20, avatar: 'https://images.unsplash.com/photo-1507591064344-4c6ce005-128?w=100&h=100&fit=crop&crop=center' },
-    { id: '8', name: 'Jennifer Lee', level: 2, depositAmount: 100, isActive: false, joinDate: '2024-01-18', commissionEarned: 0, avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&fit=crop&crop=center' },
-  ]);
+  // Top stats with dynamic filtering
+  const statsData = {
+    daily: {
+      totalMembers: 6,
+      activeMembers: 5,
+      totalDeposit: 12500,
+      totalWithdraw: 6800,
+      totalEarned: 1850,
+      referralBonus: 420
+    },
+    weekly: {
+      totalMembers: 48,
+      activeMembers: 32,
+      totalDeposit: 85450,
+      totalWithdraw: 45200,
+      totalEarned: 12500,
+      referralBonus: 3250
+    },
+    monthly: {
+      totalMembers: 156,
+      activeMembers: 118,
+      totalDeposit: 245000,
+      totalWithdraw: 132500,
+      totalEarned: 38500,
+      referralBonus: 9850
+    }
+  };
 
-  // Commission earnings
-  const [commissionEarnings, setCommissionEarnings] = useState<CommissionEarning[]>([
-    { level: 1, percentage: 20, fromMember: 'John Smith', amount: 20, date: '2024-01-15' },
-    { level: 1, percentage: 20, fromMember: 'Sarah Johnson', amount: 20, date: '2024-01-16' },
-    { level: 2, percentage: 15, fromMember: 'Mike Wilson', amount: 15, date: '2024-01-10' },
-    { level: 2, percentage: 15, fromMember: 'Emma Davis', amount: 15, date: '2024-01-12' },
-    { level: 3, percentage: 10, fromMember: 'David Brown', amount: 10, date: '2024-01-05' },
-    { level: 3, percentage: 10, fromMember: 'Lisa Miller', amount: 10, date: '2024-01-08' },
-  ]);
+  const topStats = statsData[activeStatFilter];
 
-  // Bonus and rewards
-  const [bonusRewards, setBonusRewards] = useState<BonusReward[]>([
-    { id: '1', name: '10 Active Members', requiredMembers: 10, bonusAmount: 30, achieved: false, claimed: false },
-    { id: '2', name: '20 Active Members', requiredMembers: 20, bonusAmount: 60, achieved: false, claimed: false },
-    { id: '3', name: '30 Active Members', requiredMembers: 30, bonusAmount: 100, achieved: false, claimed: false },
-    { id: '4', name: '40 Active Members', requiredMembers: 40, bonusAmount: 150, achieved: false, claimed: false },
-    { id: '5', name: '50 Active Members', requiredMembers: 50, bonusAmount: 200, achieved: false, claimed: false },
-  ]);
-
-  // Monthly salary tiers
-  const [monthlySalaries, setMonthlySalaries] = useState<MonthlySalary[]>([
-    { id: 'A', tier: 'A', requiredActiveMembers: 5, requiredTotalDeposit: 5000, salaryAmount: 100, eligible: false },
-    { id: 'B', tier: 'B', requiredActiveMembers: 10, requiredTotalDeposit: 10000, salaryAmount: 200, eligible: false },
-    { id: 'C', tier: 'C', requiredActiveMembers: 15, requiredTotalDeposit: 15000, salaryAmount: 300, eligible: false },
-    { id: 'D', tier: 'D', requiredActiveMembers: 20, requiredTotalDeposit: 20000, salaryAmount: 400, eligible: false },
-    { id: 'E', tier: 'E', requiredActiveMembers: 25, requiredTotalDeposit: 30000, salaryAmount: 500, eligible: false },
-  ]);
-
-  // Seminar support
-  const [seminarSupport, setSeminarSupport] = useState<SeminarSupport[]>([
+  // Direct share options
+  const directShareOptions = [
     { 
-      id: '1', 
-      requirement: 'Minimum 10 Active Members with $100 Deposit', 
-      description: 'সেমিনার বা প্রোগ্রাম করার জন্য মিনিমাম ১০ টা ১০০ ডলার ডিপোজিট একটিভ মেম্বার থাকতে হবে',
-      status: 'Check Eligibility'
+      platform: "Copy Link", 
+      icon: copied ? <FiCheck /> : <FiCopy />, 
+      color: "bg-purple-500/10 hover:bg-purple-500/20 active:bg-purple-500/30", 
+      text: "text-purple-400",
+      action: copyToClipboard
+    },
+    { 
+      platform: "SMS", 
+      icon: <FiMessageSquare />, 
+      color: "bg-green-600/10 hover:bg-green-600/20 active:bg-green-600/30", 
+      text: "text-green-400",
+      action: () => showNotification("SMS sharing feature coming soon!")
+    },
+    { 
+      platform: "Email", 
+      icon: <FiMail />, 
+      color: "bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30", 
+      text: "text-red-400",
+      action: () => showNotification("Email sharing feature coming soon!")
+    },
+  ];
+
+  // Social share options
+  const socialShareOptions = [
+    { 
+      platform: "WhatsApp", 
+      icon: <IoLogoWhatsapp />, 
+      color: "bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30", 
+      text: "text-green-400",
+      action: () => window.open(`https://wa.me/?text=${encodeURIComponent(referralLink)}`, '_blank')
+    },
+    { 
+      platform: "Telegram", 
+     
+      color: "bg-blue-500/10 hover:bg-blue-500/20 active:bg-blue-500/30", 
+      text: "text-blue-400",
+      action: () => window.open(`https://t.me/share/url?url=${encodeURIComponent(referralLink)}`, '_blank')
+    },
+    { 
+      platform: "Facebook", 
+      icon: <IoLogoFacebook />, 
+      color: "bg-blue-600/10 hover:bg-blue-600/20 active:bg-blue-600/30", 
+      text: "text-blue-300",
+      action: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`, '_blank')
+    },
+    { 
+      platform: "Twitter", 
+      icon: <IoLogoTwitter />, 
+      color: "bg-sky-500/10 hover:bg-sky-500/20 active:bg-sky-500/30", 
+      text: "text-sky-400",
+      action: () => window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(referralLink)}`, '_blank')
+    },
+  ];
+
+  const toggleLevel = (level: number) => {
+    setExpandedLevel(expandedLevel === level ? null : level);
+  };
+
+  const toggleQRCode = () => {
+    setShowQRCode(!showQRCode);
+  };
+
+  // Format large numbers
+  const formatNumber = (num: number) => {
+    if (num >= 1000000) {
+      return `$${(num / 1000000).toFixed(2)}M`;
     }
-  ]);
+    if (num >= 1000) {
+      return `$${(num / 1000).toFixed(1)}k`;
+    }
+    return `$${num.toLocaleString()}`;
+  };
 
-  // Stats
-  const [stats, setStats] = useState({
-    totalTeamMembers: 0,
-    activeMembers: 0,
-    totalCommission: 0,
-    totalDeposit: 0,
-    availableBonus: 0,
-    monthlySalary: 0,
-  });
-
-  // Calculate stats
-  useEffect(() => {
-    const activeMembers = teamMembers.filter(member => member.isActive).length;
-    const totalCommission = commissionEarnings.reduce((sum, earning) => sum + earning.amount, 0);
-    const totalDeposit = teamMembers.reduce((sum, member) => sum + member.depositAmount, 0);
-    
-    // Calculate achieved bonuses
-    const updatedBonuses = bonusRewards.map(bonus => ({
-      ...bonus,
-      achieved: activeMembers >= bonus.requiredMembers
-    }));
-    setBonusRewards(updatedBonuses);
-    
-    const availableBonus = updatedBonuses
-      .filter(bonus => bonus.achieved && !bonus.claimed)
-      .reduce((sum, bonus) => sum + bonus.bonusAmount, 0);
-    
-    // Calculate eligible salaries
-    const updatedSalaries = monthlySalaries.map(salary => ({
-      ...salary,
-      eligible: activeMembers >= salary.requiredActiveMembers && totalDeposit >= salary.requiredTotalDeposit
-    }));
-    setMonthlySalaries(updatedSalaries);
-    
-    const currentSalary = updatedSalaries
-      .filter(salary => salary.eligible)
-      .reduce((max, salary) => Math.max(max, salary.salaryAmount), 0);
-    
-    setStats({
-      totalTeamMembers: teamMembers.length,
-      activeMembers,
-      totalCommission,
-      totalDeposit,
-      availableBonus,
-      monthlySalary: currentSalary,
+  // Format date
+  const getCurrentDate = () => {
+    return new Date().toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
     });
-  }, [teamMembers, commissionEarnings]);
-
-  const handleClaimBonus = (bonusId: string) => {
-    setBonusRewards(bonuses =>
-      bonuses.map(bonus =>
-        bonus.id === bonusId ? { ...bonus, claimed: true } : bonus
-      )
-    );
-    alert('Bonus claimed successfully!');
-  };
-
-  const handleContactSupport = () => {
-    alert('Contacting customer support... Please provide your documents for seminar support verification.');
-  };
-
-  const getLevelColor = (level: number) => {
-    switch(level) {
-      case 1: return 'bg-gradient-to-r from-blue-500 to-blue-600';
-      case 2: return 'bg-gradient-to-r from-green-500 to-green-600';
-      case 3: return 'bg-gradient-to-r from-purple-500 to-purple-600';
-      default: return 'bg-gradient-to-r from-gray-500 to-gray-600';
-    }
-  };
-
-  const getLevelName = (level: number) => {
-    switch(level) {
-      case 1: return '1st Level';
-      case 2: return '2nd Level';
-      case 3: return '3rd Level';
-      default: return 'Unknown';
-    }
-  };
-
-  const getLevelPercentage = (level: number) => {
-    switch(level) {
-      case 1: return '20%';
-      case 2: return '15%';
-      case 3: return '10%';
-      default: return '0%';
-    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-900 to-gray-950 p-3 sm:p-4 md:p-6">
+      {/* Notification Banner */}
+      <AnimatePresence>
+        {notification && (
+          <motion.div
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-sm px-4"
+          >
+            <div className="bg-gradient-to-r from-green-600/90 to-emerald-600/90 backdrop-blur-lg rounded-xl p-3 shadow-lg border border-green-500/30">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <FiCheck className="w-4 h-4 text-white mr-2" />
+                  <span className="text-white text-sm font-medium">{notification}</span>
+                </div>
+                <button 
+                  onClick={() => setNotification(null)}
+                  className="text-white/80 hover:text-white"
+                >
+                  <FiMinus className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-white mb-3">Team Commission & Bonus System</h1>
-          <p className="text-blue-200 text-lg">Maximize your earnings through team building and active participation</p>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-gradient-to-br from-blue-800/50 to-blue-900/50 rounded-2xl p-6 border border-blue-700/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-blue-300 text-sm">Total Team Members</p>
-                <p className="text-3xl font-bold text-white">{stats.totalTeamMembers}</p>
+        
+        {/* Header - Fully Responsive */}
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center mb-2">
+                <div className="p-2 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg mr-3">
+                  <IoShareSocialSharp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate">
+                    Referral Program
+                  </h1>
+                  <p className="text-slate-400 text-xs sm:text-sm md:text-base mt-1">
+                    {getCurrentDate()}
+                  </p>
+                </div>
               </div>
-              <FiUsers className="w-10 h-10 text-blue-400" />
+              <p className="text-slate-400 text-xs sm:text-sm md:text-base">
+                Invite friends & earn commission on their investments
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 px-3 sm:px-4 py-2 rounded-lg border border-blue-500/30 flex items-center">
+                <FiZap className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 mr-2" />
+                <span className="text-xs sm:text-sm font-semibold text-white">Earn up to 10%</span>
+              </div>
+              <button className="p-2 bg-slate-800/50 rounded-lg border border-slate-700/50 hover:bg-slate-700/50 transition-colors">
+                <FiBell className="w-4 h-4 sm:w-5 sm:h-5 text-slate-300" />
+              </button>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-800/50 to-green-900/50 rounded-2xl p-6 border border-green-700/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-green-300 text-sm">Active Members</p>
-                <p className="text-3xl font-bold text-white">{stats.activeMembers}</p>
-              </div>
-              <FiUserCheck className="w-10 h-10 text-green-400" />
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-800/50 to-purple-900/50 rounded-2xl p-6 border border-purple-700/50">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-purple-300 text-sm">Total Commission</p>
-                <p className="text-3xl font-bold text-white">${stats.totalCommission}</p>
-              </div>
-              <FiDollarSign className="w-10 h-10 text-purple-400" />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Team Commission Structure */}
-          <div className="lg:col-span-2 space-y-8">
-            {/* Commission Structure */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                <FiPercent className="mr-3 text-blue-400" />
-                Team Commission Structure (3 Levels)
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                {/* Level 1 */}
-                <div className="bg-gradient-to-br from-blue-900/50 to-blue-800/50 rounded-xl p-6 border border-blue-700/50">
-                  <div className={`w-16 h-16 rounded-full ${getLevelColor(1)} flex items-center justify-center mx-auto mb-4`}>
-                    <span className="text-white text-xl font-bold">1</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white text-center mb-2">1st Level</h3>
-                  <p className="text-blue-300 text-center text-2xl font-bold mb-4">20% Commission</p>
-                  <div className="text-center">
-                    <p className="text-blue-200 text-sm">For each active member with $100 deposit</p>
-                    <p className="text-white font-semibold mt-2">Earn: $20 per member</p>
-                  </div>
-                </div>
-
-                {/* Level 2 */}
-                <div className="bg-gradient-to-br from-green-900/50 to-green-800/50 rounded-xl p-6 border border-green-700/50">
-                  <div className={`w-16 h-16 rounded-full ${getLevelColor(2)} flex items-center justify-center mx-auto mb-4`}>
-                    <span className="text-white text-xl font-bold">2</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white text-center mb-2">2nd Level</h3>
-                  <p className="text-green-300 text-center text-2xl font-bold mb-4">15% Commission</p>
-                  <div className="text-center">
-                    <p className="text-green-200 text-sm">For each active member with $100 deposit</p>
-                    <p className="text-white font-semibold mt-2">Earn: $15 per member</p>
-                  </div>
-                </div>
-
-                {/* Level 3 */}
-                <div className="bg-gradient-to-br from-purple-900/50 to-purple-800/50 rounded-xl p-6 border border-purple-700/50">
-                  <div className={`w-16 h-16 rounded-full ${getLevelColor(3)} flex items-center justify-center mx-auto mb-4`}>
-                    <span className="text-white text-xl font-bold">3</span>
-                  </div>
-                  <h3 className="text-xl font-bold text-white text-center mb-2">3rd Level</h3>
-                  <p className="text-purple-300 text-center text-2xl font-bold mb-4">10% Commission</p>
-                  <div className="text-center">
-                    <p className="text-purple-200 text-sm">For each active member with $100 deposit</p>
-                    <p className="text-white font-semibold mt-2">Earn: $10 per member</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Recent Commission Earnings */}
-              <div>
-                <h3 className="text-xl font-bold text-white mb-4">Recent Commission Earnings</h3>
-                <div className="space-y-3">
-                  {commissionEarnings.map((earning, index) => (
-                    <div key={index} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <div className={`w-10 h-10 rounded-full ${getLevelColor(earning.level)} flex items-center justify-center mr-3`}>
-                            <span className="text-white font-bold">{earning.level}</span>
-                          </div>
-                          <div>
-                            <p className="text-white font-semibold">{getLevelName(earning.level)} ({earning.percentage}%)</p>
-                            <p className="text-blue-300 text-sm">From: {earning.fromMember}</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-green-400 font-bold text-lg">+${earning.amount}</p>
-                          <p className="text-slate-400 text-sm">{earning.date}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Team Members */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                <FiUsers className="mr-3 text-blue-400" />
-                Your Team Members
-              </h2>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-700">
-                      <th className="text-left py-3 px-4 text-blue-300">Member</th>
-                      <th className="text-left py-3 px-4 text-blue-300">Level</th>
-                      <th className="text-left py-3 px-4 text-blue-300">Deposit</th>
-                      <th className="text-left py-3 px-4 text-blue-300">Status</th>
-                      <th className="text-left py-3 px-4 text-blue-300">Commission</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {teamMembers.map((member) => (
-                      <tr key={member.id} className="border-b border-slate-800 hover:bg-slate-800/50">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center">
-                            <img 
-                              src={member.avatar} 
-                              alt={member.name}
-                              className="w-10 h-10 rounded-full mr-3 border-2 border-slate-600"
-                            />
-                            <div>
-                              <p className="text-white font-semibold">{member.name}</p>
-                              <p className="text-slate-400 text-sm">Joined: {member.joinDate}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getLevelColor(member.level)} text-white`}>
-                            {getLevelName(member.level)}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-white">${member.depositAmount}</p>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`px-3 py-1 rounded-full text-xs font-bold ${member.isActive ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                            {member.isActive ? 'Active' : 'Inactive'}
-                          </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <p className="text-green-400 font-semibold">${member.commissionEarned}</p>
-                          <p className="text-slate-400 text-xs">{getLevelPercentage(member.level)} Commission</p>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column - Bonuses & Salaries */}
-          <div className="space-y-8">
-            {/* Active Member Bonus */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                <FiAward className="mr-3 text-yellow-400" />
-                Active Member Bonus
-              </h2>
-              
-              <div className="space-y-4">
-                {bonusRewards.map((bonus) => (
-                  <div 
-                    key={bonus.id} 
-                    className={`rounded-xl p-4 border ${bonus.achieved ? 'border-green-500/50 bg-green-500/10' : 'border-slate-700 bg-slate-800/50'}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-white font-semibold">{bonus.name}</p>
-                        <p className="text-slate-400 text-sm">Requires: {bonus.requiredMembers} active members</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-yellow-400 font-bold text-lg">${bonus.bonusAmount}</p>
-                        {bonus.achieved ? (
-                          <button
-                            onClick={() => handleClaimBonus(bonus.id)}
-                            disabled={bonus.claimed}
-                            className={`mt-2 px-4 py-1 rounded-full text-sm font-semibold ${bonus.claimed ? 'bg-green-500/50 text-green-300' : 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-white hover:opacity-90'}`}
-                          >
-                            {bonus.claimed ? 'Claimed' : 'Claim Bonus'}
-                          </button>
-                        ) : (
-                          <p className="text-red-400 text-sm mt-2">Not achieved</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <div className="w-full bg-slate-700 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${bonus.achieved ? 'bg-green-500' : 'bg-blue-500'}`}
-                          style={{ width: `${Math.min((stats.activeMembers / bonus.requiredMembers) * 100, 100)}%` }}
-                        ></div>
-                      </div>
-                      <p className="text-slate-400 text-xs mt-1 text-center">
-                        {stats.activeMembers}/{bonus.requiredMembers} Active Members
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-6 p-4 bg-gradient-to-r from-yellow-900/30 to-yellow-800/30 rounded-xl border border-yellow-700/50">
-                <p className="text-yellow-300 text-sm text-center">
-                  Total Available Bonus: <span className="font-bold text-white">${stats.availableBonus}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Monthly Salary */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                <FiCalendar className="mr-3 text-green-400" />
-                Monthly Salary Tiers
-              </h2>
-              
-              <div className="space-y-4">
-                {monthlySalaries.map((salary) => (
-                  <div 
-                    key={salary.id} 
-                    className={`rounded-xl p-4 border ${salary.eligible ? 'border-green-500/50 bg-green-500/10' : 'border-slate-700 bg-slate-800/50'}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <div className="flex items-center">
-                          <span className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${salary.eligible ? 'bg-green-500 text-white' : 'bg-slate-700 text-slate-300'}`}>
-                            {salary.tier}
-                          </span>
-                          <div>
-                            <p className="text-white font-semibold">Tier {salary.tier}</p>
-                            <p className="text-slate-400 text-sm">${salary.salaryAmount}/month</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        {salary.eligible ? (
-                          <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-semibold">
-                            ✅ Eligible
-                          </span>
-                        ) : (
-                          <span className="px-3 py-1 bg-red-500/20 text-red-400 rounded-full text-sm font-semibold">
-                            Requirements
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="mt-4 grid grid-cols-2 gap-2">
-                      <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-slate-400 text-xs">Active Members</p>
-                        <p className={`text-sm font-semibold ${stats.activeMembers >= salary.requiredActiveMembers ? 'text-green-400' : 'text-white'}`}>
-                          {stats.activeMembers}/{salary.requiredActiveMembers}
-                        </p>
-                      </div>
-                      <div className="bg-slate-800/50 rounded-lg p-3">
-                        <p className="text-slate-400 text-xs">Total Deposit</p>
-                        <p className={`text-sm font-semibold ${stats.totalDeposit >= salary.requiredTotalDeposit ? 'text-green-400' : 'text-white'}`}>
-                          ${stats.totalDeposit.toLocaleString()}/${salary.requiredTotalDeposit.toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-6 p-4 bg-gradient-to-r from-green-900/30 to-green-800/30 rounded-xl border border-green-700/50">
-                <p className="text-green-300 text-center">
-                  Your Current Monthly Salary: <span className="font-bold text-white text-xl">${stats.monthlySalary}</span>
-                </p>
-              </div>
-            </div>
-
-            {/* Seminar Support */}
-            <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
-              <h2 className="text-2xl font-bold text-white mb-6 flex items-center">
-                <FiMessageCircle className="mr-3 text-blue-400" />
-                Seminar/Program Support
-              </h2>
-              
-              <div className="space-y-6">
-                {seminarSupport.map((support) => (
-                  <div key={support.id} className="bg-gradient-to-r from-blue-900/30 to-blue-800/30 rounded-xl p-6 border border-blue-700/50">
-                    <div className="flex items-start mb-4">
-                      <FiCheckCircle className="w-6 h-6 text-green-400 mr-3 mt-1 flex-shrink-0" />
-                      <div>
-                        <h3 className="text-white font-semibold mb-2">Requirements:</h3>
-                        <p className="text-blue-300">{support.requirement}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <h4 className="text-white font-semibold mb-2">Description:</h4>
-                      <p className="text-slate-300 text-sm">{support.description}</p>
-                    </div>
-                    
-                    <div className="mb-6">
-                      <h4 className="text-white font-semibold mb-2">Your Current Status:</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-slate-800/50 rounded-lg p-3">
-                          <p className="text-slate-400 text-xs">Active Members</p>
-                          <p className={`text-lg font-bold ${stats.activeMembers >= 10 ? 'text-green-400' : 'text-white'}`}>
-                            {stats.activeMembers}/10
-                          </p>
-                        </div>
-                        <div className="bg-slate-800/50 rounded-lg p-3">
-                          <p className="text-slate-400 text-xs">$100 Deposit Members</p>
-                          <p className={`text-lg font-bold ${teamMembers.filter(m => m.depositAmount >= 100).length >= 10 ? 'text-green-400' : 'text-white'}`}>
-                            {teamMembers.filter(m => m.depositAmount >= 100).length}/10
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <button
-                      onClick={handleContactSupport}
-                      className="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-300 flex items-center justify-center"
-                    >
-                      <FiMessageCircle className="mr-2" />
-                      Contact Customer Support
-                    </button>
-                    
-                    <p className="text-slate-400 text-xs mt-3 text-center">
-                      কোম্পানি কাস্টমার সাপোর্টে ডকুমেন্টসহ কথা বলতে হবে
-                    </p>
-                  </div>
-                ))}
-              </div>
+          {/* Stats Filter */}
+          <div className="flex items-center justify-between mt-4 sm:mt-6">
+            <h2 className="text-sm sm:text-base font-semibold text-white">Team Performance</h2>
+            <div className="flex bg-slate-800/50 rounded-lg p-1">
+              {(['daily', 'weekly', 'monthly'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => setActiveStatFilter(filter)}
+                  className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-md transition-all capitalize ${
+                    activeStatFilter === filter 
+                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
+                      : 'text-slate-400 hover:text-slate-300'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Summary Footer */}
-        <div className="mt-12 bg-gradient-to-r from-slate-800 to-slate-900 rounded-2xl shadow-2xl p-8 border border-slate-700">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">Total Earning Summary</h2>
+        {/* Top Stats Cards - Mobile First Responsive Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+          {/* Total Team */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl p-3 sm:p-4 border border-slate-700/50 active:border-blue-500/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-1.5 sm:p-2 bg-blue-600/20 rounded-lg">
+                <FiUsers className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-blue-400" />
+              </div>
+              <span className="text-xs text-green-400 font-medium bg-green-500/10 px-1.5 py-0.5 rounded">↑ 12%</span>
+            </div>
+            <p className="text-slate-400 text-xs sm:text-sm mb-1 truncate">Total Team</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-white truncate">{topStats.totalMembers}</p>
+            <div className="flex items-center mt-2">
+              <div className="w-full bg-slate-700/50 rounded-full h-1.5">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-1.5 rounded-full transition-all duration-500"
+                  style={{ width: `${(topStats.activeMembers / topStats.totalMembers) * 100}%` }}
+                />
+              </div>
+              <span className="text-xs text-blue-400 ml-2 whitespace-nowrap">
+                {topStats.activeMembers} Active
+              </span>
+            </div>
+          </motion.div>
+
+          {/* Total Deposit */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl p-3 sm:p-4 border border-slate-700/50 active:border-emerald-500/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-1.5 sm:p-2 bg-emerald-600/20 rounded-lg">
+                <FiArrowUp className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-emerald-400" />
+              </div>
+              <span className="text-xs text-emerald-400 font-medium bg-emerald-500/10 px-1.5 py-0.5 rounded">↑ 8%</span>
+            </div>
+            <p className="text-slate-400 text-xs sm:text-sm mb-1 truncate">Total Deposit</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-white truncate">{formatNumber(topStats.totalDeposit)}</p>
+            <div className="flex items-center mt-2">
+              <FiStar className="w-2 h-2 sm:w-3 sm:h-3 text-emerald-400 mr-1" />
+              <span className="text-xs text-emerald-400 truncate">Team Investment</span>
+            </div>
+          </motion.div>
+
+          {/* Total Withdraw */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl p-3 sm:p-4 border border-slate-700/50 active:border-amber-500/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-1.5 sm:p-2 bg-amber-600/20 rounded-lg">
+                <FiArrowDown className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-amber-400" />
+              </div>
+              <span className="text-xs text-amber-400 font-medium bg-amber-500/10 px-1.5 py-0.5 rounded">↑ 5%</span>
+            </div>
+            <p className="text-slate-400 text-xs sm:text-sm mb-1 truncate">Total Withdraw</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-white truncate">{formatNumber(topStats.totalWithdraw)}</p>
+            <div className="flex items-center mt-2">
+              <FiUser className="w-2 h-2 sm:w-3 sm:h-3 text-amber-400 mr-1" />
+              <span className="text-xs text-amber-400 truncate">Team Earnings</span>
+            </div>
+          </motion.div>
+
+          {/* Your Earnings */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileTap={{ scale: 0.98 }}
+            className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl p-3 sm:p-4 border border-slate-700/50 active:border-purple-500/50 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <div className="p-1.5 sm:p-2 bg-purple-600/20 rounded-lg">
+                <FiAward className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-400" />
+              </div>
+              <span className="text-xs text-purple-400 font-medium bg-purple-500/10 px-1.5 py-0.5 rounded">↑ 15%</span>
+            </div>
+            <p className="text-slate-400 text-xs sm:text-sm mb-1 truncate">Your Earnings</p>
+            <p className="text-base sm:text-lg md:text-xl font-bold text-white truncate">{formatNumber(topStats.totalEarned)}</p>
+            <div className="flex items-center mt-2">
+              <FaChartLine className="w-2 h-2 sm:w-3 sm:h-3 text-purple-400 mr-1" />
+              <span className="text-xs text-purple-400 truncate">
+                ${topStats.referralBonus} Bonus
+              </span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Referral Link Section - Fully Responsive */}
+        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 border border-slate-700/50">
+          <div className="mb-3 sm:mb-4 md:mb-6">
+            <div className="flex items-center mb-2">
+              <div className="p-1.5 sm:p-2 bg-gradient-to-r from-blue-600/20 to-blue-700/20 rounded-lg mr-2 sm:mr-3">
+                <FiShare2 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+              </div>
+              <h2 className="text-base sm:text-lg md:text-xl font-bold text-white">Your Referral Link</h2>
+            </div>
+            <p className="text-slate-400 text-xs sm:text-sm">
+              Share this link and earn 10% commission from Level 1 referrals
+            </p>
+          </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
-              <p className="text-blue-300 text-sm">Commission Earnings</p>
-              <p className="text-3xl font-bold text-green-400">${stats.totalCommission}</p>
-              <p className="text-slate-400 text-sm mt-2">From team members</p>
+          {/* Link Display */}
+          <div className="mb-3 sm:mb-4 md:mb-6">
+            <div className="bg-slate-800/70 rounded-lg sm:rounded-xl p-3 border border-slate-700 mb-3">
+              <div className="flex items-center">
+                <FiLink className="text-blue-400 mr-2 sm:mr-3 flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5" />
+                <code className="text-slate-300 font-mono text-xs sm:text-sm truncate flex-1 select-all">
+                  {referralLink}
+                </code>
+              </div>
             </div>
             
-            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
-              <p className="text-yellow-300 text-sm">Available Bonus</p>
-              <p className="text-3xl font-bold text-yellow-400">${stats.availableBonus}</p>
-              <p className="text-slate-400 text-sm mt-2">From active members</p>
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <button
+                onClick={copyToClipboard}
+                className="flex-1 px-4 py-3 sm:py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 active:from-blue-800 active:to-blue-900 rounded-lg sm:rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 active:scale-95"
+              >
+                {copied ? (
+                  <>
+                    <FiCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <FiCopy className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">Copy Link</span>
+                  </>
+                )}
+              </button>
+              
+              <button
+                onClick={toggleQRCode}
+                className="flex-1 px-4 py-3 sm:py-3.5 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 active:from-purple-800 active:to-purple-900 rounded-lg sm:rounded-xl font-semibold text-white flex items-center justify-center gap-2 transition-all duration-300 active:scale-95"
+              >
+                <FaQrcode className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="text-sm sm:text-base">QR Code</span>
+              </button>
             </div>
-            
-            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
-              <p className="text-green-300 text-sm">Monthly Salary</p>
-              <p className="text-3xl font-bold text-green-400">${stats.monthlySalary}</p>
-              <p className="text-slate-400 text-sm mt-2">Current eligible tier</p>
+          </div>
+
+          {/* QR Code Modal */}
+          <AnimatePresence>
+            {showQRCode && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="mt-4 p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+                  <div className="flex flex-col items-center">
+                    
+                    <p className="text-slate-400 text-sm text-center mb-3">
+                      Scan QR code to share referral link
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(referralLink);
+                        showNotification("QR Code copied as image!");
+                      }}
+                      className="px-4 py-2 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 rounded-lg text-white text-sm font-medium transition-all duration-300 active:scale-95"
+                    >
+                      Save QR Code
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Commission Levels - Horizontal Scroll on Mobile */}
+          <div className="mt-4 sm:mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm sm:text-base font-semibold text-white flex items-center">
+                <FaPercentage className="mr-2 text-blue-400" />
+                Commission Levels
+              </h3>
+              <span className="text-xs text-slate-500">Swipe →</span>
             </div>
-            
-            <div className="bg-slate-800/50 rounded-xl p-6 text-center border border-slate-700">
-              <p className="text-purple-300 text-sm">Potential Monthly</p>
-              <p className="text-3xl font-bold text-purple-400">${stats.totalCommission + stats.availableBonus + stats.monthlySalary}</p>
-              <p className="text-slate-400 text-sm mt-2">Total potential earnings</p>
+            <div className="flex space-x-3 overflow-x-auto pb-3 sm:pb-4 scrollbar-hide -mx-1 px-1">
+              {levelData.map((level) => (
+                <motion.div 
+                  key={level.level}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex-shrink-0 bg-gradient-to-br ${level.color} rounded-lg sm:rounded-xl p-3 sm:p-4 border ${level.border} min-w-[160px] sm:min-w-[180px] active:scale-95 transition-transform`}
+                >
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <span className={`text-sm sm:text-base font-bold ${level.textColor}`}>
+                      Level {level.level}
+                    </span>
+                    {level.icon}
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2">{level.commission}</div>
+                  <div className="flex items-center justify-between">
+                    <div className="text-xs sm:text-sm text-slate-400">
+                      {level.members.length} member{level.members.length !== 1 ? 's' : ''}
+                    </div>
+                    <button
+                      onClick={() => toggleLevel(level.level)}
+                      className="text-xs text-slate-500 hover:text-slate-400 transition-colors"
+                    >
+                      View →
+                    </button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Share Options - Tabbed Interface */}
+        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 mb-4 sm:mb-6 md:mb-8 border border-slate-700/50">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 md:mb-6 gap-3">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-white">Share Via</h2>
+            <div className="flex bg-slate-800/50 rounded-lg p-1 w-full sm:w-auto">
+              <button
+                onClick={() => setActiveShareTab('direct')}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-md transition-all ${
+                  activeShareTab === 'direct' 
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
+                    : 'text-slate-400 hover:text-slate-300'
+                }`}
+              >
+                Direct
+              </button>
+              <button
+                onClick={() => setActiveShareTab('social')}
+                className={`flex-1 sm:flex-none px-3 sm:px-4 py-2 text-xs sm:text-sm rounded-md transition-all ${
+                  activeShareTab === 'social' 
+                    ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
+                    : 'text-slate-400 hover:text-slate-300'
+                }`}
+              >
+                Social
+              </button>
+            </div>
+          </div>
+
+          {/* Share Options Grid */}
+          <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-8 gap-2 sm:gap-3 md:gap-4">
+            {activeShareTab === 'direct' ? (
+              <>
+                {directShareOptions.map((option, index) => (
+                  <motion.button
+                    key={option.platform}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileTap={{ scale: 0.85 }}
+                    onClick={option.action}
+                    className={`flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 rounded-lg ${option.color} border border-slate-700/50 transition-all duration-300 active:scale-95`}
+                  >
+                    <div className={`text-lg sm:text-xl md:text-2xl mb-1 sm:mb-2 ${option.text}`}>
+                      {option.icon}
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium text-slate-300 truncate w-full text-center">
+                      {option.platform}
+                    </span>
+                  </motion.button>
+                ))}
+                
+                {/* QR Code Option */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.3 }}
+                  whileTap={{ scale: 0.85 }}
+                  onClick={toggleQRCode}
+                  className={`flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 rounded-lg ${
+                    showQRCode 
+                      ? 'bg-gradient-to-br from-amber-500/20 to-amber-600/20 border-amber-700/50' 
+                      : 'bg-gradient-to-br from-amber-500/10 to-amber-600/10 border-amber-700/30'
+                  } border transition-all duration-300 active:scale-95 col-span-4 sm:col-span-1`}
+                >
+                  <div className="text-lg sm:text-xl md:text-2xl mb-1 sm:mb-2 text-amber-400">
+                    <FiSmartphone />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-slate-300">QR Code</span>
+                </motion.button>
+              </>
+            ) : (
+              <>
+                {socialShareOptions.map((option, index) => (
+                  <motion.button
+                    key={option.platform}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: index * 0.1 }}
+                    whileTap={{ scale: 0.85 }}
+                    onClick={option.action}
+                    className={`flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 rounded-lg ${option.color} border border-slate-700/50 transition-all duration-300 active:scale-95`}
+                  >
+                    <div className={`text-lg sm:text-xl md:text-2xl mb-1 sm:mb-2 ${option.text}`}>
+                      {option.icon}
+                    </div>
+                    <span className="text-xs sm:text-sm font-medium text-slate-300 truncate w-full text-center">
+                      {option.platform}
+                    </span>
+                  </motion.button>
+                ))}
+                
+                {/* More Options Button */}
+                <motion.button
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.4 }}
+                  whileTap={{ scale: 0.85 }}
+                  onClick={() => showNotification("More sharing options coming soon!")}
+                  className="flex flex-col items-center justify-center p-2 sm:p-3 md:p-4 rounded-lg bg-gradient-to-br from-slate-700/30 to-slate-800/30 border border-slate-700/50 transition-all duration-300 active:scale-95"
+                >
+                  <div className="text-lg sm:text-xl md:text-2xl mb-1 sm:mb-2 text-slate-400">
+                    <FiGlobe />
+                  </div>
+                  <span className="text-xs sm:text-sm font-medium text-slate-300">More</span>
+                </motion.button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Team Levels - Mobile Optimized */}
+        <div className="space-y-3 sm:space-y-4 md:space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-white">Team Levels</h2>
+            <span className="text-xs text-slate-400 sm:text-sm">
+              Tap level to {expandedLevel ? "collapse" : "expand"} details
+            </span>
+          </div>
+          
+          {levelData.map((level, levelIndex) => {
+            const isExpanded = expandedLevel === level.level;
+            const totalDeposit = level.members.reduce((sum, member) => sum + member.deposit, 0);
+            const totalWithdraw = level.members.reduce((sum, member) => sum + member.withdraw, 0);
+            const totalProfit = level.members.reduce((sum, member) => sum + member.profit, 0);
+            const activeMembers = level.members.filter(m => m.status === "active").length;
+            const yourCommission = totalDeposit * (level.level === 1 ? 0.1 : level.level === 2 ? 0.05 : 0.02);
+
+            return (
+              <motion.div 
+                key={level.level}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: levelIndex * 0.1 }}
+                whileTap={{ scale: 0.99 }}
+                className={`bg-gradient-to-br ${level.color} rounded-xl sm:rounded-2xl border ${level.border} overflow-hidden active:scale-95 transition-transform`}
+              >
+                {/* Level Header */}
+                <button
+                  onClick={() => toggleLevel(level.level)}
+                  className="w-full p-3 sm:p-4 md:p-6 flex items-center justify-between hover:bg-white/5 active:bg-white/10 transition-colors duration-200"
+                >
+                  <div className="flex items-center flex-1 min-w-0">
+                    <div className="mr-2 sm:mr-3 md:mr-4 flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-lg sm:rounded-xl bg-gradient-to-br from-white/10 to-transparent flex items-center justify-center">
+                        {level.icon}
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center mb-1">
+                        <h3 className="text-sm sm:text-base md:text-lg font-bold text-white truncate">
+                          Level {level.level} Team
+                        </h3>
+                        <span className="ml-2 px-1.5 sm:px-2 py-0.5 text-xs rounded-full bg-white/10 text-slate-300 whitespace-nowrap">
+                          {level.members.length} members
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap gap-1 sm:gap-2">
+                        <div className="flex items-center text-xs text-slate-400 bg-black/20 px-1.5 py-0.5 rounded">
+                          <FaPercentage className="mr-1" />
+                          <span>{level.commission} commission</span>
+                        </div>
+                        <div className="flex items-center text-xs text-slate-400 bg-black/20 px-1.5 py-0.5 rounded">
+                          <FiUsers className="mr-1" />
+                          <span>{activeMembers} Active</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center ml-1 sm:ml-2">
+                    {/* Your Commission Badge - Hidden on smallest screens */}
+                    <div className="hidden xs:block px-2 sm:px-3 py-1 bg-gradient-to-r from-blue-600/20 to-blue-700/20 rounded-lg border border-blue-600/30 mr-2 sm:mr-3 md:mr-4">
+                      <span className="text-xs sm:text-sm text-blue-400 font-semibold whitespace-nowrap">
+                        Your: ${yourCommission.toFixed(0)}
+                      </span>
+                    </div>
+                    
+                    {/* Expand/Collapse Icon */}
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="text-slate-400"
+                    >
+                      {isExpanded ? (
+                        <FiChevronUp className="w-4 h-4 sm:w-5 sm:h-5" />
+                      ) : (
+                        <FiChevronDown className="w-4 h-4 sm:w-5 sm:h-5" />
+                      )}
+                    </motion.div>
+                  </div>
+                </button>
+
+                {/* Collapsible Content */}
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-3 sm:px-4 pb-3 sm:pb-4 border-t border-white/10 pt-3 sm:pt-4">
+                        {/* Quick Stats Row - Mobile */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-3 sm:mb-4">
+                          <div className="bg-black/20 rounded-lg p-2 sm:p-3">
+                            <p className="text-slate-400 text-xs mb-1">Active Members</p>
+                            <p className="text-base sm:text-lg font-bold text-white">{activeMembers}</p>
+                          </div>
+                          <div className="bg-black/20 rounded-lg p-2 sm:p-3">
+                            <p className="text-slate-400 text-xs mb-1">Your Commission</p>
+                            <p className="text-base sm:text-lg font-bold text-blue-400">${yourCommission.toFixed(0)}</p>
+                          </div>
+                          <div className="bg-black/20 rounded-lg p-2 sm:p-3">
+                            <p className="text-slate-400 text-xs mb-1">Total Deposit</p>
+                            <p className="text-base sm:text-lg font-bold text-emerald-400">{formatNumber(totalDeposit)}</p>
+                          </div>
+                          <div className="bg-black/20 rounded-lg p-2 sm:p-3">
+                            <p className="text-slate-400 text-xs mb-1">Total Profit</p>
+                            <p className="text-base sm:text-lg font-bold text-purple-400">${totalProfit}</p>
+                          </div>
+                        </div>
+
+                        {/* Members List */}
+                        <div className="space-y-2 sm:space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-sm sm:text-base font-semibold text-white">Team Members</h4>
+                            <span className="text-xs text-slate-500">
+                              Showing {level.members.length} member{level.members.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          
+                          {level.members.map((member, memberIndex) => (
+                            <motion.div 
+                              key={member.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: memberIndex * 0.05 }}
+                              whileTap={{ scale: 0.98 }}
+                              className="bg-slate-800/30 rounded-lg p-3 border border-slate-700/50 active:border-blue-500/50 transition-all"
+                            >
+                              {/* Member Header */}
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center flex-1 min-w-0">
+                                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                                    <FaUserCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center">
+                                      <p className="font-medium text-white text-sm truncate">{member.name}</p>
+                                      <div className="ml-2 flex items-center">
+                                        <FaIdBadge className="w-2 h-2 sm:w-3 sm:h-3 text-slate-400 mr-1" />
+                                        <p className="text-xs text-slate-400">REF{member.id}</p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center mt-0.5">
+                                      <FiCalendar className="w-2 h-2 sm:w-3 sm:h-3 text-slate-400 mr-1" />
+                                      <p className="text-xs text-slate-400">Joined {member.joinDate}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className={`px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 ml-2 ${
+                                  member.status === "active" 
+                                    ? "bg-green-500/20 text-green-400" 
+                                    : "bg-red-500/20 text-red-400"
+                                }`}>
+                                  {member.status === "active" ? "Active" : "Inactive"}
+                                </span>
+                              </div>
+
+                              {/* Member Details Grid */}
+                              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                                <div className="flex items-center bg-black/20 rounded p-2">
+                                  <FiDollarSign className="w-3 h-3 text-emerald-400 mr-1 sm:mr-2 flex-shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-slate-400 truncate">Deposit</p>
+                                    <p className="text-xs sm:text-sm font-semibold text-emerald-400 truncate">
+                                      ${member.deposit.toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center bg-black/20 rounded p-2">
+                                  <FiDownload className="w-3 h-3 text-amber-400 mr-1 sm:mr-2 flex-shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-slate-400 truncate">Withdraw</p>
+                                    <p className="text-xs sm:text-sm font-semibold text-amber-400 truncate">
+                                      ${member.withdraw.toLocaleString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center bg-black/20 rounded p-2">
+                                  <FaMoneyBillWave className="w-3 h-3 text-blue-400 mr-1 sm:mr-2 flex-shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-slate-400 truncate">Profit</p>
+                                    <p className="text-xs sm:text-sm font-semibold text-blue-400 truncate">
+                                      ${member.profit}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center bg-black/20 rounded p-2 col-span-2 sm:col-span-1">
+                                  <FiPhone className="w-3 h-3 text-slate-400 mr-1 sm:mr-2 flex-shrink-0" />
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-slate-400 truncate">Phone</p>
+                                    <p className="text-xs font-semibold text-slate-300 truncate">
+                                      {member.phone.replace('+1 ', '')}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })}
+        </div>
+
+        {/* How It Works & Tips */}
+        <div className="mt-4 sm:mt-6 md:mt-8 space-y-4 sm:space-y-6">
+          {/* How It Works */}
+          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-slate-700/50">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-3 sm:mb-4 md:mb-6 flex items-center">
+              <FiHelpCircle className="mr-2 text-blue-400" />
+              How It Works
+            </h3>
+            <div className="space-y-4 sm:space-y-0 sm:grid sm:grid-cols-3 sm:gap-4 md:gap-6">
+              {[
+                {
+                  step: 1,
+                  title: "Share Your Link",
+                  description: "Copy & share your unique referral link with friends",
+                  color: "from-blue-600 to-blue-700"
+                },
+                {
+                  step: 2,
+                  title: "They Join & Invest",
+                  description: "Friends join via your link and make their first investment",
+                  color: "from-green-600 to-green-700"
+                },
+                {
+                  step: 3,
+                  title: "Earn Commission",
+                  description: "Earn from their deposits for 3 levels deep",
+                  color: "from-purple-600 to-purple-700"
+                }
+              ].map((item, index) => (
+                <div key={item.step} className="flex sm:flex-col items-start sm:items-center">
+                  <div className={`flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br ${item.color} flex items-center justify-center mr-3 sm:mr-0 sm:mb-3 md:mb-4`}>
+                    <span className="font-bold text-white text-sm sm:text-base">{item.step}</span>
+                  </div>
+                  <div className="sm:text-center flex-1">
+                    <h4 className="font-semibold text-white text-sm sm:text-base mb-1">{item.title}</h4>
+                    <p className="text-slate-400 text-xs sm:text-sm">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Tips & Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Quick Tips */}
+            <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-blue-700/30">
+              <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-2 sm:mb-3 md:mb-4 flex items-center">
+                <FiZap className="mr-2 text-blue-400" />
+                Quick Tips
+              </h4>
+              <ul className="space-y-2 sm:space-y-3">
+                {[
+                  "Share on multiple platforms for better reach",
+                  "Follow up with potential referrals personally",
+                  "Track your team's performance regularly",
+                  "Use QR codes for in-person sharing",
+                  "Check your commission daily"
+                ].map((tip, index) => (
+                  <li key={index} className="flex items-start">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 mr-2 flex-shrink-0" />
+                    <span className="text-slate-300 text-xs sm:text-sm">{tip}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Performance Stats */}
+            <div className="bg-gradient-to-br from-emerald-900/20 to-teal-900/20 rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-emerald-700/30">
+              <h4 className="text-sm sm:text-base md:text-lg font-semibold text-white mb-2 sm:mb-3 md:mb-4 flex items-center">
+                <FiTarget className="mr-2 text-emerald-400" />
+                Performance
+              </h4>
+              <div className="space-y-3 sm:space-y-4">
+                {[
+                  { label: "Conversion Rate", value: "8.5%", color: "text-green-400" },
+                  { label: "Avg. Member Value", value: "$2,450", color: "text-blue-400" },
+                  { label: "Active Rate", value: "76%", color: "text-emerald-400" },
+                  { label: "Avg. Commission", value: "$245", color: "text-purple-400" }
+                ].map((stat, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-slate-400 text-xs sm:text-sm">{stat.label}</span>
+                    <span className={`font-bold ${stat.color} text-sm sm:text-base`}>{stat.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-emerald-700/30">
+                <button className="w-full px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 rounded-lg text-white text-sm font-semibold transition-all duration-300 active:scale-95">
+                  View Full Analytics
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-6 sm:mt-8 md:mt-10 pt-4 sm:pt-6 border-t border-slate-800/50">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="text-center sm:text-left">
+              <p className="text-slate-400 text-xs sm:text-sm">
+                Need help? Contact support@wealthbridge.com
+              </p>
+              <p className="text-slate-500 text-xs mt-1">
+                Terms & Conditions apply. Commission rates may vary.
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <button className="px-3 sm:px-4 py-2 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg text-slate-300 text-xs sm:text-sm transition-colors">
+                Terms
+              </button>
+              <button className="px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-600/20 to-blue-700/20 hover:from-blue-700/30 hover:to-blue-800/30 rounded-lg text-blue-400 text-xs sm:text-sm transition-colors">
+                Support
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        
+        @media (max-width: 640px) {
+          .select-all {
+            user-select: all;
+            -webkit-user-select: all;
+            -moz-user-select: all;
+          }
+        }
+        
+        /* Improve touch targets */
+        @media (max-width: 768px) {
+          button, [role="button"] {
+            min-height: 44px;
+            min-width: 44px;
+          }
+        }
+      `}</style>
     </div>
   );
 }

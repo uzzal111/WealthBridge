@@ -3,14 +3,35 @@
 import { FiTrendingUp, FiDollarSign,FiEye,FiUser, FiUsers, FiPieChart, FiClock, FiAward, FiBarChart2, FiShield, FiGlobe, FiSmartphone, FiArrowRight, FiCheck, FiPlay, FiStar, FiHome } from 'react-icons/fi';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function WealthBridgeHomepage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('stocks');
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // Handle Signup Navigation
+  const handleSignup = () => {
+    router.push('/register');
+  };
+
+  // Handle Login Navigation
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  // Handle View Success Stories
+  const handleViewSuccessStories = () => {
+    // Scroll to success section or navigate
+    const element = document.getElementById('success-stories');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
@@ -40,6 +61,7 @@ export default function WealthBridgeHomepage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleSignup}
               className="bg-green-500 hover:bg-green-600 text-white px-8 py-4 rounded-lg font-bold shadow-lg text-lg flex items-center justify-center space-x-2"
             >
               <span>Start Investing Now</span>
@@ -48,6 +70,7 @@ export default function WealthBridgeHomepage() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              onClick={handleSignup}
               className="bg-white/10 backdrop-blur-md border-2 border-white/30 text-white px-8 py-4 rounded-lg font-bold text-lg flex items-center justify-center space-x-2"
             >
               <FiPlay className="text-white" />
@@ -60,10 +83,34 @@ export default function WealthBridgeHomepage() {
       {/* Stats Section */}
       <section className="py-16 px-4 max-w-6xl mx-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <StatCard icon={<FiTrendingUp size={32} />} value="18.2%" label="Avg. Annual Return" delay={0.1} />
-          <StatCard icon={<FiUsers size={32} />} value="500K+" label="Active Investors" delay={0.2} />
-          <StatCard icon={<FiDollarSign size={32} />} value="$4.2B+" label="Assets Managed" delay={0.3} />
-          <StatCard icon={<FiAward size={32} />} value="24/7" label="Award-Winning Support" delay={0.4} />
+          <StatCard 
+            icon={<FiTrendingUp size={32} />} 
+            value="18.2%" 
+            label="Avg. Annual Return" 
+            delay={0.1} 
+            onClick={handleSignup}
+          />
+          <StatCard 
+            icon={<FiUsers size={32} />} 
+            value="500K+" 
+            label="Active Investors" 
+            delay={0.2} 
+            onClick={handleSignup}
+          />
+          <StatCard 
+            icon={<FiDollarSign size={32} />} 
+            value="$4.2B+" 
+            label="Assets Managed" 
+            delay={0.3} 
+            onClick={handleSignup}
+          />
+          <StatCard 
+            icon={<FiAward size={32} />} 
+            value="24/7" 
+            label="Award-Winning Support" 
+            delay={0.4} 
+            onClick={handleSignup}
+          />
         </div>
       </section>
 
@@ -106,6 +153,7 @@ export default function WealthBridgeHomepage() {
               minInvestment="$500"
               type={activeTab}
               delay={0.1}
+              onClick={handleSignup}
             />
             <InvestmentCard 
               name="Dividend Income Fund"
@@ -114,6 +162,7 @@ export default function WealthBridgeHomepage() {
               minInvestment="$250"
               type={activeTab}
               delay={0.2}
+              onClick={handleSignup}
             />
             <InvestmentCard 
               name="Global Opportunities"
@@ -122,6 +171,7 @@ export default function WealthBridgeHomepage() {
               minInvestment="$1000"
               type={activeTab}
               delay={0.3}
+              onClick={handleSignup}
             />
           </div>
         </div>
@@ -141,6 +191,7 @@ export default function WealthBridgeHomepage() {
               description="Sign up and complete your investor profile in minutes" 
               icon={<FiSmartphone size={24} />}
               delay={0.1}
+              onClick={handleSignup}
             />
             <StepCard 
               number={2} 
@@ -148,6 +199,7 @@ export default function WealthBridgeHomepage() {
               description="Select from curated portfolios or build your own" 
               icon={<FiPieChart size={24} />}
               delay={0.2}
+              onClick={handleSignup}
             />
             <StepCard 
               number={3} 
@@ -155,13 +207,14 @@ export default function WealthBridgeHomepage() {
               description="Monitor performance and adjust your portfolio easily" 
               icon={<FiTrendingUp size={24} />}
               delay={0.3}
+              onClick={handleSignup}
             />
           </div>
         </div>
       </section>
 
       {/* Success Stories */}
-      <section className="py-16 px-4 bg-white">
+      <section id="success-stories" className="py-16 px-4 bg-white">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Success Stories</h2>
@@ -174,6 +227,7 @@ export default function WealthBridgeHomepage() {
               activity="Tech stock portfolio" 
               time="2 years investing"
               delay={0.1}
+              onClick={handleSignup}
             />
             <EarningCard 
               name="Sarah J." 
@@ -181,6 +235,7 @@ export default function WealthBridgeHomepage() {
               activity="Crypto investments" 
               time="18 months investing"
               delay={0.2}
+              onClick={handleSignup}
             />
             <EarningCard 
               name="David L." 
@@ -188,10 +243,14 @@ export default function WealthBridgeHomepage() {
               activity="Real estate & stocks" 
               time="3 years investing"
               delay={0.3}
+              onClick={handleSignup}
             />
           </div>
           <div className="text-center mt-8">
-            <button className="text-blue-600 font-bold hover:underline flex items-center justify-center space-x-2 mx-auto">
+            <button 
+              onClick={handleSignup}
+              className="text-blue-600 font-bold hover:underline flex items-center justify-center space-x-2 mx-auto"
+            >
               <span>View More Success Stories</span>
               <FiArrowRight />
             </button>
@@ -212,18 +271,21 @@ export default function WealthBridgeHomepage() {
               description="Military-grade encryption protects all your data and transactions"
               icon={<FiShield size={32} />}
               delay={0.1}
+              onClick={handleSignup}
             />
             <SecurityCard 
               title="Regulated & Licensed"
               description="Fully compliant with financial regulations in all operating regions"
               icon={<FiAward size={32} />}
               delay={0.2}
+              onClick={handleSignup}
             />
             <SecurityCard 
               title="Insurance Protection"
               description="Up to $500,000 protection on cash balances with partner banks"
               icon={<FiDollarSign size={32} />}
               delay={0.3}
+              onClick={handleSignup}
             />
           </div>
         </div>
@@ -257,14 +319,7 @@ export default function WealthBridgeHomepage() {
                 <span>Instant trade execution</span>
               </li>
             </ul>
-            <div className="flex space-x-4">
-              <button className="bg-black text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2">
-                <span>App Store</span>
-              </button>
-              <button className="bg-black text-white px-6 py-3 rounded-lg font-medium flex items-center space-x-2">
-                <span>Google Play</span>
-              </button>
-            </div>
+            
           </div>
           <div className="md:w-1/2 flex justify-center">
             <motion.div 
@@ -314,19 +369,34 @@ export default function WealthBridgeHomepage() {
                 </div>
                 
                 <div className="mt-auto flex justify-between">
-                  <button className="bg-white/10 text-white p-3 rounded-xl">
+                  <button 
+                    onClick={handleSignup}
+                    className="bg-white/10 text-white p-3 rounded-xl hover:bg-white/20 transition-colors"
+                  >
                     <FiHome size={20} />
                   </button>
-                  <button className="bg-white/10 text-white p-3 rounded-xl">
+                  <button 
+                    onClick={handleSignup}
+                    className="bg-white/10 text-white p-3 rounded-xl hover:bg-white/20 transition-colors"
+                  >
                     <FiPieChart size={20} />
                   </button>
-                  <button className="bg-blue-500 text-white p-3 rounded-xl">
+                  <button 
+                    onClick={handleSignup}
+                    className="bg-blue-500 text-white p-3 rounded-xl hover:bg-blue-600 transition-colors"
+                  >
                     <FiDollarSign size={20} />
                   </button>
-                  <button className="bg-white/10 text-white p-3 rounded-xl">
+                  <button 
+                    onClick={handleSignup}
+                    className="bg-white/10 text-white p-3 rounded-xl hover:bg-white/20 transition-colors"
+                  >
                     <FiBarChart2 size={20} />
                   </button>
-                  <button className="bg-white/10 text-white p-3 rounded-xl">
+                  <button 
+                    onClick={handleLogin}
+                    className="bg-white/10 text-white p-3 rounded-xl hover:bg-white/20 transition-colors"
+                  >
                     <FiUser size={20} />
                   </button>
                 </div>
@@ -351,6 +421,7 @@ export default function WealthBridgeHomepage() {
               text="WealthBridge has completely transformed how I manage my investments. The platform is intuitive and the returns have been outstanding."
               rating={5}
               delay={0.1}
+              onClick={handleSignup}
             />
             <TestimonialCard 
               name="Maria Rodriguez"
@@ -358,6 +429,7 @@ export default function WealthBridgeHomepage() {
               text="As someone new to investing, I appreciated the educational resources and guidance. My portfolio has grown 34% in just 18 months."
               rating={5}
               delay={0.2}
+              onClick={handleSignup}
             />
             <TestimonialCard 
               name="James Wilson"
@@ -365,6 +437,7 @@ export default function WealthBridgeHomepage() {
               text="The dividend investment strategies have provided a steady income stream for my retirement. I couldn't be happier with the results."
               rating={5}
               delay={0.3}
+              onClick={handleSignup}
             />
           </div>
         </div>
@@ -410,13 +483,24 @@ export default function WealthBridgeHomepage() {
               </div>
             </div>
             
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="bg-green-500 hover:bg-green-600 text-white px-10 py-4 rounded-lg font-bold text-lg w-full"
-            >
-              Create Your Account
-            </motion.button>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleSignup}
+                className="bg-green-500 hover:bg-green-600 text-white px-10 py-4 rounded-lg font-bold text-lg flex-1"
+              >
+                Create Your Account
+              </motion.button>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLogin}
+                className="bg-white/10 hover:bg-white/20 text-white px-10 py-4 rounded-lg font-bold text-lg border border-white/30 transition-colors"
+              >
+                Login
+              </motion.button>
+            </div>
             <p className="text-blue-200 text-sm mt-4">Get your first month free</p>
           </motion.div>
         </div>
@@ -424,70 +508,19 @@ export default function WealthBridgeHomepage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12 px-4">
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-700 rounded-lg flex items-center justify-center">
-                <FiTrendingUp className="text-white text-lg" />
-              </div>
-              <span className="text-xl font-bold text-white">WealthBridge</span>
-            </div>
-            <p className="mb-4">Smart investing for exceptional returns</p>
-            <div className="flex space-x-4">
-              <a href="#" className="hover:text-white transition-colors">
-                <span className="sr-only">Twitter</span>
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 极客时间 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 极客时间4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 极客时间0 001.极客时间27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                </svg>
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                <span className="sr-only">LinkedIn</span>
-                <svg className="h-6极客时间 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5极客时间-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                </svg>
-              </a>
-              <a href="#" className="hover:text-white transition-colors">
-                <span className="sr-only">Facebook</span>
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path fillRule="evenodd" d="M22 12极客时间c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd" />
-                </svg>
-              </a>
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-white font-medium mb-4">Platform</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">Investing</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Retirement</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Crypto</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Cash Management</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="text-white font-medium mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">Learning Center</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Market News</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Financial Tools</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Podcast</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="text-white font-medium mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
-            </ul>
-          </div>
-        </div>
         
-        <div className="max-w-6极客时间xl mx-auto border-t border-gray-800 mt-8 pt-8 text-center">
+          
+          
+          
+          
+          
+        
+          
+         
+        
+        <div className="max-w-6xl mx-auto border-t border-gray-800 mt-8 pt-8 text-center">
           <p>© {new Date().getFullYear()} WealthBridge. All rights reserved.</p>
+         
         </div>
       </footer>
     </div>
@@ -495,14 +528,21 @@ export default function WealthBridgeHomepage() {
 }
 
 // Component for stat cards
-function StatCard({ icon, value, label, delay = 0 }: { icon: React.ReactNode, value: string, label: string, delay?: number }) {
+function StatCard({ icon, value, label, delay = 0, onClick }: { 
+  icon: React.ReactNode, 
+  value: string, 
+  label: string, 
+  delay?: number,
+  onClick?: () => void 
+}) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -5 }}
-      className="bg-white p-6 rounded-xl shadow-md text-center border border-gray-100"
+      onClick={onClick}
+      className="bg-white p-6 rounded-xl shadow-md text-center border border-gray-100 cursor-pointer hover:shadow-lg transition-shadow"
     >
       <div className="text-blue-600 mb-3 flex justify-center">{icon}</div>
       <h3 className="text-2xl font-bold mb-2">{value}</h3>
@@ -512,21 +552,23 @@ function StatCard({ icon, value, label, delay = 0 }: { icon: React.ReactNode, va
 }
 
 // Component for steps
-function StepCard({ number, title, description, icon, delay = 0 }: { 
+function StepCard({ number, title, description, icon, delay = 0, onClick }: { 
   number: number, 
   title: string, 
   description: string, 
   icon: React.ReactNode,
-  delay?: number
+  delay?: number,
+  onClick?: () => void
 }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm"
+      onClick={onClick}
+      className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm cursor-pointer hover:shadow-lg transition-shadow"
     >
-      <div className="w-12 h-12 bg-blue极客时间-100 rounded-full flex items-center justify-center text-blue-600 mb-4极客时间 mx-auto">
+      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mb-4 mx-auto">
         {icon}
       </div>
       <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-bold -mt-11 mb-2 mx-auto">
@@ -539,13 +581,14 @@ function StepCard({ number, title, description, icon, delay = 0 }: {
 }
 
 // Component for investment cards
-function InvestmentCard({ name, returnRate, riskLevel, minInvestment, type, delay = 0 }: { 
+function InvestmentCard({ name, returnRate, riskLevel, minInvestment, type, delay = 0, onClick }: { 
   name: string, 
   returnRate: string, 
   riskLevel: string,
   minInvestment: string,
   type: string,
-  delay?: number
+  delay?: number,
+  onClick?: () => void
 }) {
   const getRiskColor = (level: string) => {
     switch(level.toLowerCase()) {
@@ -571,7 +614,8 @@ function InvestmentCard({ name, returnRate, riskLevel, minInvestment, type, dela
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -5 }}
-      className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
+      onClick={onClick}
+      className="bg-white p-6 rounded-xl shadow-md border border-gray-100 cursor-pointer hover:shadow-lg transition-shadow"
     >
       <div className="h-40 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-lg mb-4 flex items-center justify-center">
         {getTypeIcon(type)}
@@ -583,7 +627,7 @@ function InvestmentCard({ name, returnRate, riskLevel, minInvestment, type, dela
           <p className="text-green-600 font-bold">{returnRate}</p>
         </div>
         <div>
-          <p className="text-gray极客时间-500 text-sm">Risk Level</p>
+          <p className="text-gray-500 text-sm">Risk Level</p>
           <span className={`px-2 py-1 rounded-full text-xs font-bold ${getRiskColor(riskLevel)}`}>
             {riskLevel}
           </span>
@@ -593,7 +637,10 @@ function InvestmentCard({ name, returnRate, riskLevel, minInvestment, type, dela
         <p className="text-gray-500 text-sm">Minimum Investment</p>
         <p className="font-bold">{minInvestment}</p>
       </div>
-      <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors">
+      <button 
+        onClick={onClick}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition-colors"
+      >
         Invest Now
       </button>
     </motion.div>
@@ -601,12 +648,13 @@ function InvestmentCard({ name, returnRate, riskLevel, minInvestment, type, dela
 }
 
 // Component for earning cards
-function EarningCard({ name, amount, activity, time, delay = 0 }: { 
+function EarningCard({ name, amount, activity, time, delay = 0, onClick }: { 
   name: string, 
   amount: string, 
   activity: string, 
   time: string,
-  delay?: number
+  delay?: number,
+  onClick?: () => void
 }) {
   return (
     <motion.div 
@@ -614,7 +662,8 @@ function EarningCard({ name, amount, activity, time, delay = 0 }: {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
       whileHover={{ y: -5 }}
-      className="bg-white p-6 rounded-xl shadow-md border border-gray-100"
+      onClick={onClick}
+      className="bg-white p-6 rounded-xl shadow-md border border-gray-100 cursor-pointer hover:shadow-lg transition-shadow"
     >
       <div className="flex justify-between items-start mb-4">
         <h3 className="font-bold text-lg">{name}</h3>
@@ -629,18 +678,20 @@ function EarningCard({ name, amount, activity, time, delay = 0 }: {
 }
 
 // Component for security cards
-function SecurityCard({ title, description, icon, delay = 0 }: { 
+function SecurityCard({ title, description, icon, delay = 0, onClick }: { 
   title: string, 
   description: string, 
   icon: React.ReactNode,
-  delay?: number
+  delay?: number,
+  onClick?: () => void
 }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-gray-800 p-6 rounded-lg border border-gray-700"
+      onClick={onClick}
+      className="bg-gray-800 p-6 rounded-lg border border-gray-700 cursor-pointer hover:bg-gray-700 transition-colors"
     >
       <div className="text-blue-400 mb-4 flex justify-center">{icon}</div>
       <h3 className="text-xl font-bold mb-2 text-center">{title}</h3>
@@ -650,19 +701,21 @@ function SecurityCard({ title, description, icon, delay = 0 }: {
 }
 
 // Component for testimonial cards
-function TestimonialCard({ name, role, text, rating, delay = 0 }: { 
+function TestimonialCard({ name, role, text, rating, delay = 0, onClick }: { 
   name: string, 
   role: string, 
   text: string,
   rating: number,
-  delay?: number
+  delay?: number,
+  onClick?: () => void
 }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay }}
-      className="bg-white/10 p-6 rounded-xl backdrop-blur-sm border border-white/10"
+      onClick={onClick}
+      className="bg-white/10 p-6 rounded-xl backdrop-blur-sm border border-white/10 cursor-pointer hover:bg-white/15 transition-colors"
     >
       <div className="flex items-center mb-4">
         <div className="w-12 h-12 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold mr-3">
