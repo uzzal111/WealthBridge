@@ -72,9 +72,9 @@ export default function MobileFooterNav() {
     },
     { 
        
-      activeIcon: <FaFire size={24} />,
+      activeIcon: <FaFire size={28} />,
       label: "Live", 
-      path: "",
+      path: "https://t.me/@Webdevloper14",
       activeColor: "text-rose-400",
       inactiveColor: "text-slate-400",
       bgActive: "bg-gradient-to-br from-rose-900/30 to-red-900/20",
@@ -208,13 +208,13 @@ export default function MobileFooterNav() {
                   {/* Badge for Live item */}
                   {item.label === "Live" && (
                     <div className={`
-                      absolute -top-2 -right-2 px-1.5 py-0.5 rounded-full text-[10px] font-bold
+                      absolute -top-6 -right-2 px-1.5 py-0.5 rounded-full text-[10px] font-bold
                       ${isActive 
                         ? 'bg-gradient-to-r from-rose-600 to-red-600 text-white animate-pulse' 
                         : 'bg-slate-700 text-slate-300'
                       }
                     `}>
-                      LIVE
+                      Telegram
                     </div>
                   )}
                   

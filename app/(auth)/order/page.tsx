@@ -1,6 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FaStar, FaUserFriends, FaDollarSign, FaCheckCircle, 
+  FaLock, FaEdit, FaHistory, FaCrown, FaRocket, FaGem,
+  FaShoppingCart, FaMobileAlt, FaLaptop, FaTv, FaCar,
+  FaHeadphones, FaCamera, FaGamepad, FaArrowLeft, FaTimes,
+  FaCalendarDay, FaChartLine, FaAward, FaShoppingBag
+} from 'react-icons/fa';
 
 // Define TypeScript interfaces
 interface Review {
@@ -24,6 +32,9 @@ interface Package {
   reviewsSubmitted: number;
   lastReviewTime: Date | null;
   cooldownUntil: Date | null;
+  color: string;
+  gradient: string;
+  icon: React.ReactNode;
 }
 
 interface User {
@@ -35,14 +46,30 @@ interface User {
 
 // Predefined product options with images
 const PRODUCTS = [
-  { id: 1, name: 'iPhone 15 Pro', image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=center' },
-  { id: 2, name: 'Samsung Galaxy S23', image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=400&fit=crop&crop=center' },
-  { id: 3, name: 'MacBook Pro M3', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w-400&h=400&fit=crop&crop=center' },
-  { id: 4, name: 'Nike Air Max', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&crop=center' },
-  { id: 7, name: 'Dyson Vacuum', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&crop=center' },
-  { id: 8, name: 'LG OLED TV', image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=400&fit=crop&crop=center' },
-  { id: 9, name: 'Amazon Echo', image: 'https://images.unsplash.com/photo-1589003077984-894e133dabab?w=400&h=400&fit=crop&crop=center' },
-  { id: 10, name: 'Tesla Model 3', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=400&fit=crop&crop=center' },
+  { id: 1, name: 'iPhone 15 Pro', image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=center', category: 'mobile' },
+  { id: 2, name: 'Samsung Galaxy S23', image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=400&fit=crop&crop=center', category: 'mobile' },
+  { id: 3, name: 'MacBook Pro M3', image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop&crop=center', category: 'laptop' },
+  { id: 4, name: 'Nike Air Max', image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop&crop=center', category: 'fashion' },
+  { id: 5, name: 'Sony WH-1000XM5', image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center', category: 'audio' },
+  { id: 6, name: 'Canon EOS R5', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400&h=400&fit=crop&crop=center', category: 'camera' },
+  { id: 7, name: 'Dyson Vacuum', image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&crop=center', category: 'home' },
+  { id: 8, name: 'LG OLED TV', image: 'https://images.unsplash.com/photo-1593359677879-a4bb92f829d1?w=400&h=400&fit=crop&crop=center', category: 'tv' },
+  { id: 9, name: 'Amazon Echo', image: 'https://images.unsplash.com/photo-1589003077984-894e133dabab?w=400&h=400&fit=crop&crop=center', category: 'smart' },
+  { id: 10, name: 'Tesla Model 3', image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400&h=400&fit=crop&crop=center', category: 'car' },
+];
+
+// Package Icons and Colors
+const PACKAGE_CONFIGS = [
+  { id: 1, name: 'Starter', color: 'from-blue-500 to-cyan-400', icon: <FaRocket className="text-blue-400" /> },
+  { id: 2, name: 'Bronze', color: 'from-amber-600 to-yellow-500', icon: <FaGem className="text-amber-400" /> },
+  { id: 3, name: 'Silver', color: 'from-gray-400 to-gray-300', icon: <FaGem className="text-gray-300" /> },
+  { id: 4, name: 'Gold', color: 'from-yellow-500 to-amber-400', icon: <FaCrown className="text-yellow-400" /> },
+  { id: 5, name: 'Platinum', color: 'from-teal-500 to-emerald-400', icon: <FaCrown className="text-teal-400" /> },
+  { id: 6, name: 'Diamond', color: 'from-indigo-500 to-purple-400', icon: <FaGem className="text-indigo-400" /> },
+  { id: 7, name: 'Executive', color: 'from-red-500 to-pink-400', icon: <FaCrown className="text-red-400" /> },
+  { id: 8, name: 'Premium', color: 'from-purple-600 to-pink-500', icon: <FaCrown className="text-purple-400" /> },
+  { id: 9, name: 'Elite', color: 'from-rose-600 to-orange-500', icon: <FaCrown className="text-rose-400" /> },
+  { id: 10, name: 'VIP', color: 'from-violet-600 to-fuchsia-500', icon: <FaCrown className="text-violet-400" /> },
 ];
 
 export default function WealthBridgePremiumReviewSystem() {
@@ -56,16 +83,16 @@ export default function WealthBridgePremiumReviewSystem() {
 
   // Package tiers with cooldown tracking
   const [packages, setPackages] = useState<Package[]>([
-    { id: 1, name: 'Starter', minInvestment: 30, maxInvestment: 100, reviewsRequired: 5, unlocked: true, activeUsersRequired: 0, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 2, name: 'Bronze', minInvestment: 101, maxInvestment: 500, reviewsRequired: 5, unlocked: false, activeUsersRequired: 10, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 3, name: 'Silver', minInvestment: 501, maxInvestment: 1000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 25, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 4, name: 'Gold', minInvestment: 1001, maxInvestment: 2000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 50, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 5, name: 'Platinum', minInvestment: 2001, maxInvestment: 5000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 100, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 6, name: 'Diamond', minInvestment: 5001, maxInvestment: 10000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 200, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 7, name: 'Executive', minInvestment: 10001, maxInvestment: 25000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 500, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 8, name: 'Premium', minInvestment: 25001, maxInvestment: 50000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 1000, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 9, name: 'Elite', minInvestment: 50001, maxInvestment: 100000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 2500, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null },
-    { id: 10, name: 'VIP', minInvestment: 100001, maxInvestment: 500000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 5000, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null }
+    { id: 1, name: 'Starter', minInvestment: 30, maxInvestment: 100, reviewsRequired: 5, unlocked: true, activeUsersRequired: 0, reviewsSubmitted: 3, lastReviewTime: null, cooldownUntil: null, color: 'blue', gradient: 'from-blue-500 to-cyan-400', icon: <FaRocket /> },
+    { id: 2, name: 'Bronze', minInvestment: 101, maxInvestment: 500, reviewsRequired: 5, unlocked: false, activeUsersRequired: 10, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'amber', gradient: 'from-amber-600 to-yellow-500', icon: <FaGem /> },
+    { id: 3, name: 'Silver', minInvestment: 501, maxInvestment: 1000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 25, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'gray', gradient: 'from-gray-400 to-gray-300', icon: <FaGem /> },
+    { id: 4, name: 'Gold', minInvestment: 1001, maxInvestment: 2000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 50, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'yellow', gradient: 'from-yellow-500 to-amber-400', icon: <FaCrown /> },
+    { id: 5, name: 'Platinum', minInvestment: 2001, maxInvestment: 5000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 100, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'teal', gradient: 'from-teal-500 to-emerald-400', icon: <FaCrown /> },
+    { id: 6, name: 'Diamond', minInvestment: 5001, maxInvestment: 10000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 200, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'indigo', gradient: 'from-indigo-500 to-purple-400', icon: <FaGem /> },
+    { id: 7, name: 'Executive', minInvestment: 10001, maxInvestment: 25000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 500, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'red', gradient: 'from-red-500 to-pink-400', icon: <FaCrown /> },
+    { id: 8, name: 'Premium', minInvestment: 25001, maxInvestment: 50000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 1000, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'purple', gradient: 'from-purple-600 to-pink-500', icon: <FaCrown /> },
+    { id: 9, name: 'Elite', minInvestment: 50001, maxInvestment: 100000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 2500, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'rose', gradient: 'from-rose-600 to-orange-500', icon: <FaCrown /> },
+    { id: 10, name: 'VIP', minInvestment: 100001, maxInvestment: 500000, reviewsRequired: 5, unlocked: false, activeUsersRequired: 5000, reviewsSubmitted: 0, lastReviewTime: null, cooldownUntil: null, color: 'violet', gradient: 'from-violet-600 to-fuchsia-500', icon: <FaCrown /> }
   ]);
 
   // Reviews state
@@ -75,7 +102,7 @@ export default function WealthBridgePremiumReviewSystem() {
       productName: 'iPhone 15 Pro',
       productImage: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&crop=center',
       rating: 5,
-      comment: 'Amazing phone with excellent camera quality!',
+      comment: 'Amazing phone with excellent camera quality! The battery life is impressive.',
       createdAt: new Date('2024-01-15'),
       packageName: 'Starter'
     },
@@ -84,8 +111,17 @@ export default function WealthBridgePremiumReviewSystem() {
       productName: 'Samsung Galaxy S23',
       productImage: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400&h=400&fit=crop&crop=center',
       rating: 4,
-      comment: 'Great performance but battery could be better',
+      comment: 'Great performance but battery could be better. Camera is excellent though!',
       createdAt: new Date('2024-01-14'),
+      packageName: 'Starter'
+    },
+    {
+      id: '3',
+      productName: 'MacBook Pro M3',
+      productImage: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=400&fit=crop&crop=center',
+      rating: 5,
+      comment: 'Best laptop I have ever used. The M3 chip is blazing fast!',
+      createdAt: new Date('2024-01-13'),
       packageName: 'Starter'
     }
   ]);
@@ -145,7 +181,7 @@ export default function WealthBridgePremiumReviewSystem() {
     
     setCurrentPackage(pkg);
     setShowReviewModal(true);
-    setShowProductSelection(true); // Start with product selection
+    setShowProductSelection(true);
     setNewReview({
       productId: null,
       productName: '',
@@ -173,7 +209,7 @@ export default function WealthBridgePremiumReviewSystem() {
       ...newReview,
       productId: null,
       productName: '',
-      productImage: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center' // Default product image
+      productImage: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center'
     });
     setShowProductSelection(false);
   };
@@ -231,17 +267,22 @@ export default function WealthBridgePremiumReviewSystem() {
   };
 
   // Progress bar component
-  const ProgressBar = ({ current, total, label }: { current: number; total: number; label: string }) => (
-    <div className="mb-3">
-      <div className="flex justify-between text-sm text-gray-600 mb-1">
-        <span>{label}</span>
-        <span>{current}/{total}</span>
+  const ProgressBar = ({ current, total, label, color = 'blue' }: { current: number; total: number; label: string; color?: string }) => (
+    <div className="mb-4">
+      <div className="flex justify-between text-sm mb-2">
+        <span className="text-gray-300">{label}</span>
+        <span className="font-semibold text-white">{current}/{total}</span>
       </div>
-      <div className="w-full bg-gray-200 rounded-full h-2.5">
-        <div 
-          className="bg-gradient-to-r from-green-400 to-blue-500 h-2.5 rounded-full transition-all duration-500 ease-out" 
-          style={{ width: `${Math.min((current / total) * 100, 100)}%` }}
-        ></div>
+      <div className="w-full bg-gray-800 rounded-full h-2.5 overflow-hidden">
+        <motion.div 
+          className={`h-full rounded-full ${color === 'blue' ? 'bg-gradient-to-r from-blue-500 to-cyan-400' : 
+            color === 'amber' ? 'bg-gradient-to-r from-amber-500 to-yellow-400' :
+            color === 'green' ? 'bg-gradient-to-r from-green-500 to-emerald-400' :
+            'bg-gradient-to-r from-purple-500 to-pink-400'}`}
+          initial={{ width: 0 }}
+          animate={{ width: `${Math.min((current / total) * 100, 100)}%` }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        />
       </div>
     </div>
   );
@@ -251,471 +292,530 @@ export default function WealthBridgePremiumReviewSystem() {
     const isCompleted = pkg.reviewsSubmitted >= pkg.reviewsRequired;
     
     return (
-      <div 
-        className={`relative rounded-2xl shadow-xl overflow-hidden transition-all duration-300 transform ${
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: pkg.id * 0.05 }}
+        whileHover={{ scale: 1.02 }}
+        className={`relative overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 ${
           pkg.unlocked 
-            ? 'bg-gradient-to-br from-white to-gray-50 hover:shadow-2xl hover:-translate-y-2 cursor-pointer border-2 border-transparent hover:border-blue-200' 
-            : 'bg-gradient-to-br from-gray-100 to-gray-200 opacity-80'
-        } ${isCompleted ? 'ring-2 ring-green-400' : ''}`}
+            ? 'cursor-pointer hover:shadow-3xl' 
+            : 'opacity-90 cursor-not-allowed'
+        }`}
         onClick={() => handleOpenReview(pkg)}
       >
-        {/* Premium Badge */}
-        {pkg.id >= 8 && (
-          <div className="absolute top-4 right-4 z-10">
-            <span className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-              PREMIUM
-            </span>
-          </div>
-        )}
+        {/* Background Gradient */}
+        <div className={`absolute inset-0 bg-gradient-to-br ${pkg.gradient} opacity-20`} />
         
-        {/* Completed Overlay */}
-        {isCompleted && (
-          <div className="absolute inset-0 bg-green-400 bg-opacity-10 z-20 flex items-center justify-center">
-            <div className="bg-green-500 text-white px-4 py-2 rounded-lg text-center">
-              <div className="text-sm font-semibold">✅ Today's Work Completed</div>
-              <div className="text-xs">Come back tomorrow</div>
+        {/* Main Content */}
+        <div className="relative bg-gray-900/90 backdrop-blur-sm p-6">
+          {/* Header */}
+          <div className="flex justify-between items-start mb-4">
+            <div className="flex items-center space-x-3">
+              <div className={`p-3 rounded-xl bg-gradient-to-br ${pkg.gradient}`}>
+                {pkg.icon}
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">{pkg.name}</h3>
+                <p className="text-gray-400 text-sm">
+                  ${pkg.minInvestment.toLocaleString()} - ${pkg.maxInvestment.toLocaleString()}
+                </p>
+              </div>
+            </div>
+            
+            {/* Status Badge */}
+            <div className={`px-3 py-1 rounded-full text-xs font-bold ${
+              !pkg.unlocked ? 'bg-red-500/20 text-red-400' :
+              isCompleted ? 'bg-green-500/20 text-green-400' :
+              'bg-blue-500/20 text-blue-400'
+            }`}>
+              {!pkg.unlocked ? '🔒 Locked' :
+               isCompleted ? '✅ Completed' :
+               '📝 Available'}
             </div>
           </div>
-        )}
-        
-        {/* Package Header */}
-        <div className={`relative p-6 text-white ${getPackageGradient(pkg.id)}`}>
-          <div className="absolute top-0 left-0 w-full h-full opacity-10 bg-white"></div>
-          <h3 className="text-2xl font-bold relative z-10">{pkg.name}</h3>
-          <p className="text-blue-100 text-sm mt-1 relative z-10">
-            ${pkg.minInvestment.toLocaleString()} - ${pkg.maxInvestment.toLocaleString()}
-          </p>
           
-          {/* Status Indicator */}
-          <div className="absolute bottom-4 right-4">
-            {!pkg.unlocked ? (
-              <div className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">🔒 Locked</div>
-            ) : isCompleted ? (
-              <div className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">✅ Completed</div>
-            ) : (
-              <div className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">📝 Available</div>
-            )}
-          </div>
-        </div>
-        
-        {/* Package Content */}
-        <div className="p-6">
+          {/* Progress Bar */}
           <ProgressBar 
             current={pkg.reviewsSubmitted} 
             total={pkg.reviewsRequired} 
-            label="Review Progress" 
+            label="Today's Progress" 
+            color={pkg.color}
           />
           
-          <div className="space-y-3 text-sm">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 flex items-center">
-                <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                </svg>
-                Active Users
-              </span>
-              <span className={`font-semibold ${activeUsers >= pkg.activeUsersRequired ? 'text-green-600' : 'text-red-600'}`}>
+          {/* Requirements */}
+          <div className="space-y-3 text-sm mb-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-gray-400">
+                <FaUserFriends className="w-4 h-4 mr-2" />
+                <span>Active Users Required</span>
+              </div>
+              <span className={`font-semibold ${activeUsers >= pkg.activeUsersRequired ? 'text-green-400' : 'text-red-400'}`}>
                 {pkg.activeUsersRequired}
               </span>
             </div>
             
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600 flex items-center">
-                <svg className="w-4 h-4 mr-2 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd"/>
-                </svg>
-                Min Investment
-              </span>
-              <span className={`font-semibold ${currentUser.investmentAmount >= pkg.minInvestment ? 'text-green-600' : 'text-red-600'}`}>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center text-gray-400">
+                <FaDollarSign className="w-4 h-4 mr-2" />
+                <span>Min Investment</span>
+              </div>
+              <span className={`font-semibold ${currentUser.investmentAmount >= pkg.minInvestment ? 'text-green-400' : 'text-red-400'}`}>
                 ${pkg.minInvestment.toLocaleString()}
               </span>
             </div>
           </div>
           
           {/* Action Button */}
-          <div className="mt-6">
-            {pkg.unlocked ? (
-              <button 
-                className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 ${
-                  isCompleted 
-                    ? 'bg-gradient-to-r from-green-400 to-green-500 text-white shadow-lg cursor-default' 
-                    : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 shadow-lg hover:shadow-xl'
-                }`}
-                disabled={isCompleted}
-              >
-                {isCompleted ? (
-                  <span className="flex items-center justify-center">
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
-                    Today's Work Completed
-                  </span>
-                ) : (
-                  <span>Write Review ({pkg.reviewsSubmitted}/{pkg.reviewsRequired})</span>
-                )}
-              </button>
+          <button 
+            className={`w-full py-3 rounded-xl font-bold transition-all duration-300 ${
+              !pkg.unlocked 
+                ? 'bg-gray-800 text-gray-400 cursor-not-allowed'
+                : isCompleted
+                ? 'bg-gradient-to-r from-green-600 to-emerald-500 text-white'
+                : `bg-gradient-to-r ${pkg.gradient} text-white hover:opacity-90`
+            }`}
+            disabled={!pkg.unlocked || isCompleted}
+          >
+            {!pkg.unlocked ? (
+              <span className="flex items-center justify-center">
+                <FaLock className="w-4 h-4 mr-2" />
+                Unlock Package
+              </span>
+            ) : isCompleted ? (
+              <span className="flex items-center justify-center">
+                <FaCheckCircle className="w-5 h-5 mr-2" />
+                Daily Work Completed
+              </span>
             ) : (
-              <div className="text-center py-3 text-gray-500 text-sm bg-gray-100 rounded-xl">
-                {currentUser.investmentAmount < pkg.minInvestment ? (
-                  <span>Invest ${pkg.minInvestment.toLocaleString()}+ to unlock</span>
-                ) : (
-                  <span>Need {pkg.activeUsersRequired - activeUsers} more active users</span>
-                )}
-              </div>
+              <span className="flex items-center justify-center">
+                <FaEdit className="w-4 h-4 mr-2" />
+                Write Review ({pkg.reviewsSubmitted}/{pkg.reviewsRequired})
+              </span>
             )}
-          </div>
+          </button>
         </div>
-      </div>
+      </motion.div>
     );
   };
 
-  // Helper function for package gradients
-  const getPackageGradient = (id: number) => {
-    const gradients = [
-      'bg-gradient-to-r from-blue-400 to-blue-600',
-      'bg-gradient-to-r from-green-400 to-green-600',
-      'bg-gradient-to-r from-gray-400 to-gray-600',
-      'bg-gradient-to-r from-yellow-400 to-yellow-600',
-      'bg-gradient-to-r from-purple-400 to-purple-600',
-      'bg-gradient-to-r from-pink-400 to-pink-600',
-      'bg-gradient-to-r from-red-400 to-red-600',
-      'bg-gradient-to-r from-indigo-400 to-indigo-600',
-      'bg-gradient-to-r from-teal-400 to-teal-600',
-      'bg-gradient-to-r from-orange-400 to-orange-600'
-    ];
-    return gradients[id - 1] || gradients[0];
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-8 px-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900">
+      {/* Floating Action Button for Mobile */}
+      <div className="fixed bottom-6 right-6 z-40 lg:hidden">
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          className="p-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full shadow-2xl"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        >
+          <FaArrowLeft className="w-6 h-6 text-white" />
+        </motion.button>
+      </div>
+
+      <div className="container mx-auto px-4 py-8">
         {/* User Info Card */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl shadow-2xl p-8 mb-12 border border-slate-600">
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-r from-gray-800/80 to-purple-900/80 rounded-3xl shadow-2xl p-6 lg:p-8 mb-8 backdrop-blur-sm border border-gray-700"
+        >
           <div className="flex flex-col lg:flex-row justify-between items-center">
-            <div className="text-center lg:text-left">
-              <h2 className="text-3xl font-bold text-white mb-2">Welcome back, {currentUser.name}! 👋</h2>
-              <p className="text-blue-200 text-lg">
-                Your Investment Portfolio: <span className="font-bold text-green-400">${currentUser.investmentAmount.toLocaleString()}</span>
+            <div className="text-center lg:text-left mb-6 lg:mb-0">
+              <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent mb-2">
+                Welcome back, {currentUser.name}! 👋
+              </h1>
+              <p className="text-gray-300 text-lg">
+                Investment Portfolio: <span className="font-bold text-green-400">${currentUser.investmentAmount.toLocaleString()}</span>
               </p>
-              <p className="text-blue-300 text-sm mt-2">
-                Complete 5 reviews per package daily to maximize your benefits
+              <p className="text-gray-400 text-sm mt-2">
+                Complete daily reviews to unlock premium benefits and rewards
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-4 mt-6 lg:mt-0">
-              <div className="bg-slate-900 px-6 py-3 rounded-xl border border-slate-600 text-center">
-                <div className="text-2xl font-bold text-green-400">{activeUsers}</div>
-                <div className="text-blue-300 text-sm">Active Users</div>
-              </div>
-              <div className="bg-slate-900 px-6 py-3 rounded-xl border border-slate-600 text-center">
-                <div className="text-2xl font-bold text-purple-400">{reviews.length}</div>
-                <div className="text-blue-300 text-sm">Total Reviews</div>
-              </div>
-              <div className="bg-slate-900 px-6 py-3 rounded-xl border border-slate-600 text-center">
-                <div className="text-2xl font-bold text-yellow-400">
-                  {packages.filter(pkg => pkg.reviewsSubmitted >= pkg.reviewsRequired).length}
-                </div>
-                <div className="text-blue-300 text-sm">Completed Today</div>
-              </div>
+            
+            <div className="grid grid-cols-3 gap-4 w-full lg:w-auto">
+              {[
+                { value: activeUsers, label: 'Active Users', icon: <FaUserFriends />, color: 'text-blue-400' },
+                { value: reviews.length, label: 'Total Reviews', icon: <FaEdit />, color: 'text-purple-400' },
+                { 
+                  value: packages.filter(pkg => pkg.reviewsSubmitted >= pkg.reviewsRequired).length, 
+                  label: 'Completed Today', 
+                  icon: <FaCheckCircle />, 
+                  color: 'text-green-400' 
+                },
+              ].map((stat, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700 text-center"
+                >
+                  <div className={`text-2xl font-bold ${stat.color} mb-1`}>
+                    {stat.value}
+                  </div>
+                  <div className="text-gray-400 text-sm flex items-center justify-center">
+                    {stat.icon}
+                    <span className="ml-2">{stat.label}</span>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Packages Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-8 mb-16">
-          {packages.map((pkg) => (
-            <PackageCard key={pkg.id} pkg={pkg} />
-          ))}
+        <div className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl lg:text-3xl font-bold text-white flex items-center">
+              <FaCrown className="w-6 h-6 mr-3 text-yellow-400" />
+              Available Packages
+            </h2>
+            <div className="text-gray-400 text-sm hidden lg:block">
+              <FaCalendarDay className="inline w-4 h-4 mr-2" />
+              Resets daily
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+            {packages.map((pkg) => (
+              <PackageCard key={pkg.id} pkg={pkg} />
+            ))}
+          </div>
         </div>
 
         {/* Recent Reviews Section */}
-        <div className="bg-gradient-to-r from-slate-800 to-slate-700 rounded-2xl shadow-2xl p-8 mb-8 border border-slate-600">
-          <h3 className="text-2xl font-bold text-white mb-6 flex items-center">
-            <svg className="w-6 h-6 mr-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
-            </svg>
-            Your Recent Reviews
-          </h3>
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="bg-gradient-to-r from-gray-800/80 to-purple-900/80 rounded-3xl shadow-2xl p-6 lg:p-8 mb-8 backdrop-blur-sm border border-gray-700"
+        >
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-2xl font-bold text-white flex items-center">
+              <FaHistory className="w-6 h-6 mr-3 text-blue-400" />
+              Your Recent Reviews
+            </h3>
+            <span className="text-gray-400 text-sm">{reviews.length} reviews</span>
+          </div>
           
           {reviews.length === 0 ? (
-            <div className="text-center py-12 text-slate-400">
-              <svg className="w-16 h-16 mx-auto mb-4 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
-              </svg>
-              <p className="text-lg">No reviews yet. Start reviewing to earn rewards!</p>
+            <div className="text-center py-12">
+              <div className="w-24 h-24 mx-auto mb-6 bg-gray-800 rounded-full flex items-center justify-center">
+                <FaEdit className="w-12 h-12 text-gray-600" />
+              </div>
+              <p className="text-gray-400 text-lg">No reviews yet. Start reviewing to earn rewards!</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reviews.slice(0, 6).map((review) => (
-                <div key={review.id} className="bg-slate-900 rounded-xl p-5 border border-slate-700 hover:border-blue-500 transition-all duration-300">
+              {reviews.map((review, index) => (
+                <motion.div
+                  key={review.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-gray-900/60 backdrop-blur-sm rounded-2xl p-5 border border-gray-700 hover:border-blue-500 transition-all duration-300"
+                >
                   <div className="flex items-start space-x-4">
-                    <div className="flex-shrink-0">
-                      <div className="relative">
-                        <img 
-                          src={review.productImage} 
-                          alt={review.productName}
-                          className="w-16 h-16 rounded-lg object-cover border-2 border-slate-600"
-                        />
-                        <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                          {review.packageName}
-                        </div>
+                    <div className="relative flex-shrink-0">
+                      <img 
+                        src={review.productImage} 
+                        alt={review.productName}
+                        className="w-20 h-20 rounded-xl object-cover border-2 border-gray-600"
+                      />
+                      <div className={`absolute -top-2 -right-2 px-3 py-1 rounded-full text-xs font-bold ${
+                        review.packageName === 'VIP' ? 'bg-gradient-to-r from-violet-600 to-fuchsia-500' :
+                        review.packageName === 'Premium' ? 'bg-gradient-to-r from-purple-600 to-pink-500' :
+                        'bg-gradient-to-r from-blue-600 to-cyan-500'
+                      } text-white`}>
+                        {review.packageName}
                       </div>
                     </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white mb-1">{review.productName}</h4>
-                      <div className="flex items-center mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-white mb-2 truncate">{review.productName}</h4>
+                      <div className="flex items-center mb-3">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <svg
+                          <FaStar
                             key={star}
-                            className={`w-4 h-4 ${star <= review.rating ? 'text-yellow-400' : 'text-slate-600'}`}
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
+                            className={`w-4 h-4 ${star <= review.rating ? 'text-yellow-400' : 'text-gray-600'}`}
+                          />
                         ))}
-                        <span className="ml-2 text-slate-400 text-sm">{review.rating}/5</span>
+                        <span className="ml-2 text-gray-400 text-sm">{review.rating}/5</span>
                       </div>
-                      <p className="text-slate-300 text-sm line-clamp-2">{review.comment}</p>
-                      <div className="text-slate-500 text-xs mt-3">
-                        {new Date(review.createdAt).toLocaleDateString()}
+                      <p className="text-gray-300 text-sm line-clamp-2 mb-3">{review.comment}</p>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-500 text-xs">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </span>
+                        <button className="text-blue-400 hover:text-blue-300 text-xs">
+                          View Details →
+                        </button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
-      {/* Product Selection Modal */}
-      {showReviewModal && showProductSelection && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full border border-slate-600 animate-modal-in">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-white">Select Product 📱</h3>
-                  <p className="text-blue-300 text-sm mt-1">
-                    Choose a product to review for {currentPackage?.name} package
-                  </p>
-                </div>
-                <button 
-                  onClick={() => setShowReviewModal(false)}
-                  className="text-slate-400 hover:text-white transition-colors p-2 hover:bg-slate-700 rounded-full"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="mb-6">
-                <h4 className="text-lg font-semibold text-white mb-4">Popular Products</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                  {PRODUCTS.map((product) => (
-                    <button
-                      key={product.id}
-                      onClick={() => handleSelectProduct(product)}
-                      className="group relative bg-slate-700 rounded-xl p-4 border border-slate-600 hover:border-blue-500 hover:bg-slate-800 transition-all duration-300 transform hover:-translate-y-1"
-                    >
-                      <div className="aspect-square overflow-hidden rounded-lg mb-3">
-                        <img 
-                          src={product.image} 
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                      </div>
-                      <p className="text-white text-sm font-medium truncate">{product.name}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="border-t border-slate-700 pt-6">
-                <h4 className="text-lg font-semibold text-white mb-4">Or Review Your Own Product</h4>
-                <button
-                  onClick={handleCustomProduct}
-                  className="w-full p-4 bg-gradient-to-r from-purple-900 to-blue-900 rounded-xl border border-slate-600 hover:border-blue-500 hover:from-purple-800 hover:to-blue-800 transition-all duration-300 flex items-center justify-center group"
-                >
-                  <svg className="w-6 h-6 mr-3 text-blue-400 group-hover:text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  <span className="text-white font-semibold">Add Custom Product</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Review Modal with Product Image */}
-      {showReviewModal && !showProductSelection && currentPackage && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-          <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-2xl max-w-md w-full border border-slate-600 animate-modal-in">
-            <div className="p-6">
-              {/* Header */}
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">Write Review ✍️</h3>
-                <button 
-                  onClick={() => setShowReviewModal(false)}
-                  className="text-slate-400 hover:text-white transition-colors p-1 hover:bg-slate-700 rounded-full"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              
-              {/* Package Info */}
-              <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-3 rounded-lg mb-4 border border-blue-700">
-                <p className="text-blue-200 text-xs text-center">
-                  <span className="font-semibold text-white">{currentPackage.name}</span> • 
-                  Progress: <span className="font-semibold text-white">{currentPackage.reviewsSubmitted + 1}/{currentPackage.reviewsRequired}</span>
-                </p>
-              </div>
-              
-              {/* Product Preview with Image */}
-              <div className="mb-6 bg-slate-700 rounded-xl p-4 border border-slate-600">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="relative">
-                      <img 
-                        src={newReview.productImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center'} 
-                        alt="Product"
-                        className="w-16 h-16 rounded-lg object-cover border-2 border-slate-500"
-                      />
-                      <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                        Product
-                      </div>
-                    </div>
+      {/* Modals */}
+      <AnimatePresence>
+        {/* Product Selection Modal */}
+        {showReviewModal && showProductSelection && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-4xl w-full border border-gray-700 max-h-[90vh] overflow-hidden"
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Select Product 📱</h3>
+                    <p className="text-gray-400 text-sm mt-1">
+                      Choose a product to review for <span className="text-blue-400 font-semibold">{currentPackage?.name}</span> package
+                    </p>
                   </div>
-                  <div className="flex-1">
-                    {newReview.productId ? (
-                      <h4 className="text-white font-semibold">{newReview.productName}</h4>
-                    ) : (
-                      <div>
-                        <label className="block text-xs font-semibold text-blue-300 mb-1">Product Name *</label>
-                        <input 
-                          type="text" 
-                          value={newReview.customProductName}
-                          onChange={(e) => setNewReview({...newReview, customProductName: e.target.value})}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-                          placeholder="Enter product name..."
-                        />
-                      </div>
-                    )}
-                    <button 
-                      onClick={() => setShowProductSelection(true)}
-                      className="text-xs text-blue-400 hover:text-blue-300 mt-2 flex items-center"
-                    >
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                      Change Product
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => setShowReviewModal(false)}
+                    className="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-800 rounded-full"
+                  >
+                    <FaTimes className="w-6 h-6" />
+                  </button>
                 </div>
-              </div>
-              
-              {/* Review Form */}
-              <div className="space-y-4">
-                {/* Rating Stars */}
-                <div>
-                  <label className="block text-xs font-semibold text-blue-300 mb-1">Your Rating *</label>
-                  <div className="flex justify-center space-x-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button 
-                        key={star}
-                        type="button"
-                        onClick={() => setNewReview({...newReview, rating: star})}
-                        className="focus:outline-none transform hover:scale-110 transition-transform duration-200"
+
+                {/* Product Grid */}
+                <div className="mb-8">
+                  <h4 className="text-lg font-semibold text-white mb-4">Popular Products</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                    {PRODUCTS.map((product) => (
+                      <motion.button
+                        key={product.id}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleSelectProduct(product)}
+                        className="group relative bg-gray-800 rounded-2xl p-4 border border-gray-700 hover:border-blue-500 hover:bg-gray-800/80 transition-all duration-300"
                       >
-                        <svg 
-                          className={`w-8 h-8 ${star <= newReview.rating ? 'text-yellow-400 drop-shadow-lg' : 'text-slate-600'}`} 
-                          fill="currentColor" 
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      </button>
+                        <div className="aspect-square overflow-hidden rounded-xl mb-3">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                        </div>
+                        <p className="text-white text-sm font-medium text-center truncate">{product.name}</p>
+                      </motion.button>
                     ))}
                   </div>
                 </div>
-                
-                {/* Comment Textarea */}
-                <div>
-                  <label className="block text-xs font-semibold text-blue-300 mb-1">Review Comment *</label>
-                  <textarea 
-                    value={newReview.comment}
-                    onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-                    placeholder="Share your experience with this product..."
-                  />
-                </div>
-                
-                {/* Submit Button */}
-                <div className="flex justify-end space-x-2 pt-2">
-                  <button 
-                    onClick={() => setShowProductSelection(true)}
-                    className="px-4 py-2 border border-slate-600 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors font-semibold text-sm"
+
+                {/* Custom Product Button */}
+                <div className="border-t border-gray-700 pt-6">
+                  <h4 className="text-lg font-semibold text-white mb-4">Review Custom Product</h4>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleCustomProduct}
+                    className="w-full p-6 bg-gradient-to-r from-gray-800 to-gray-900 rounded-2xl border-2 border-dashed border-gray-600 hover:border-blue-500 hover:from-gray-800/80 hover:to-gray-900/80 transition-all duration-300 flex flex-col items-center justify-center group"
                   >
-                    Back
-                  </button>
-                  <button 
-                    onClick={handleSubmitReview}
-                    className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 font-semibold text-sm flex items-center"
-                  >
-                    <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    Submit Review
-                  </button>
+                    <div className="w-16 h-16 bg-gray-700 rounded-full flex items-center justify-center mb-4 group-hover:bg-gray-600">
+                      <FaShoppingBag className="w-8 h-8 text-gray-400 group-hover:text-blue-400" />
+                    </div>
+                    <span className="text-white font-semibold text-lg">Add Your Own Product</span>
+                    <p className="text-gray-400 text-sm mt-2">Review any product of your choice</p>
+                  </motion.button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Review Modal */}
+        {showReviewModal && !showProductSelection && currentPackage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl max-w-md w-full border border-gray-700"
+            >
+              <div className="p-6">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Write Review ✍️</h3>
+                  <button 
+                    onClick={() => setShowReviewModal(false)}
+                    className="text-gray-400 hover:text-white transition-colors p-1 hover:bg-gray-800 rounded-full"
+                  >
+                    <FaTimes className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                {/* Package Info */}
+                <div className={`p-4 rounded-xl bg-gradient-to-r ${currentPackage.gradient} bg-opacity-20 border border-gray-700 mb-6`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {currentPackage.icon}
+                      <span className="ml-2 font-semibold text-white">{currentPackage.name}</span>
+                    </div>
+                    <span className="text-white font-bold">
+                      {currentPackage.reviewsSubmitted + 1}/{currentPackage.reviewsRequired}
+                    </span>
+                  </div>
+                </div>
+                
+                {/* Product Preview */}
+                <div className="mb-6 bg-gray-800/50 rounded-2xl p-4 border border-gray-700">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex-shrink-0">
+                      <img 
+                        src={newReview.productImage || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop&crop=center'} 
+                        alt="Product"
+                        className="w-20 h-20 rounded-xl object-cover border-2 border-gray-600"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      {newReview.productId ? (
+                        <h4 className="text-white font-semibold mb-2">{newReview.productName}</h4>
+                      ) : (
+                        <div>
+                          <label className="block text-sm font-semibold text-gray-300 mb-2">Product Name *</label>
+                          <input 
+                            type="text" 
+                            value={newReview.customProductName}
+                            onChange={(e) => setNewReview({...newReview, customProductName: e.target.value})}
+                            className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            placeholder="Enter product name..."
+                          />
+                        </div>
+                      )}
+                      <button 
+                        onClick={() => setShowProductSelection(true)}
+                        className="text-sm text-blue-400 hover:text-blue-300 mt-3 flex items-center"
+                      >
+                        <FaArrowLeft className="w-4 h-4 mr-2" />
+                        Change Product
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Review Form */}
+                <div className="space-y-6">
+                  {/* Rating */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-3">Your Rating</label>
+                    <div className="flex justify-center space-x-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <motion.button 
+                          key={star}
+                          whileHover={{ scale: 1.2 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => setNewReview({...newReview, rating: star})}
+                          className="focus:outline-none"
+                        >
+                          <FaStar 
+                            className={`w-10 h-10 ${star <= newReview.rating ? 'text-yellow-400' : 'text-gray-600'} transition-colors duration-200`}
+                          />
+                        </motion.button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Comment */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-300 mb-3">Review Comment *</label>
+                    <textarea 
+                      value={newReview.comment}
+                      onChange={(e) => setNewReview({...newReview, comment: e.target.value})}
+                      rows={4}
+                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
+                      placeholder="Share your honest experience with this product..."
+                    />
+                  </div>
+                  
+                  {/* Buttons */}
+                  <div className="flex space-x-4 pt-4">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowProductSelection(true)}
+                      className="flex-1 px-4 py-3 border border-gray-600 text-gray-300 rounded-xl hover:bg-gray-800 transition-colors font-semibold text-sm"
+                    >
+                      Back
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleSubmitReview}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl hover:opacity-90 transition-all font-semibold text-sm flex items-center justify-center"
+                    >
+                      <FaCheckCircle className="w-5 h-5 mr-2" />
+                      Submit Review
+                    </motion.button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fixed Submit Review Button for Desktop */}
+      {currentPackage && !showReviewModal && (
+        <motion.div
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-40 hidden lg:block"
+        >
+          <button
+            onClick={() => handleOpenReview(currentPackage)}
+            className={`px-8 py-4 rounded-full shadow-2xl font-bold text-lg flex items-center space-x-3 ${
+              currentPackage.reviewsSubmitted >= currentPackage.reviewsRequired
+                ? 'bg-gradient-to-r from-green-600 to-emerald-500'
+                : `bg-gradient-to-r ${currentPackage.gradient}`
+            } text-white hover:shadow-3xl transition-all duration-300`}
+          >
+            {currentPackage.reviewsSubmitted >= currentPackage.reviewsRequired ? (
+              <>
+                <FaCheckCircle className="w-6 h-6" />
+                <span>Daily Work Completed</span>
+              </>
+            ) : (
+              <>
+                <FaEdit className="w-6 h-6" />
+                <span>
+                  Write {currentPackage.name} Review ({currentPackage.reviewsSubmitted}/{currentPackage.reviewsRequired})
+                </span>
+              </>
+            )}
+          </button>
+        </motion.div>
       )}
 
-      {/* Premium Footer */}
-      <div className="text-center mt-16">
-        <div className="inline-flex items-center bg-slate-800 px-6 py-3 rounded-full border border-slate-600">
-          <span className="text-blue-300 text-sm">WealthBridge Premium Review System • Complete 5 reviews daily per package</span>
+      {/* Footer */}
+      <div className="text-center py-8">
+        <div className="inline-flex items-center bg-gray-800/50 backdrop-blur-sm px-8 py-4 rounded-full border border-gray-700">
+          <FaChartLine className="w-5 h-5 text-blue-400 mr-3" />
+          <span className="text-gray-300 text-sm">
+            WealthBridge Premium • Complete {packages[0]?.reviewsRequired || 5} reviews daily per package
+          </span>
         </div>
       </div>
-
-      <style jsx>{`
-        .line-clamp-2 {
-          display: -webkit-box;
-          -webkit-line-clamp: 2;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        
-        .line-clamp-3 {
-          display: -webkit-box;
-          -webkit-line-clamp: 3;
-          -webkit-box-orient: vertical;
-          overflow: hidden;
-        }
-        
-        @keyframes modal-in {
-          from { 
-            opacity: 0; 
-            transform: scale(0.9) translateY(20px); 
-          }
-          to { 
-            opacity: 1; 
-            transform: scale(1) translateY(0); 
-          }
-        }
-        
-        .animate-modal-in {
-          animation: modal-in 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

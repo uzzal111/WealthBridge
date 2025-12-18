@@ -327,10 +327,6 @@ export default function UserProfilePage() {
                       className="w-full bg-slate-700 text-white rounded-lg p-2 text-sm"
                     >
                       <option value="USD">USDT - US Dollar</option>
-                      <option value="EUR">EUR - Euro</option>
-                      <option value="GBP">GBP - British Pound</option>
-                      <option value="CAD">CAD - Canadian Dollar</option>
-                      <option value="AUD">AUD - Australian Dollar</option>
                     </select>
                   </div>
                 </div>
